@@ -91,13 +91,11 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
     # 随机块大小是为了让进程吃资源的节奏错开
     random_chunk_size = lambda: random.randint(300000, 600000)
     # 针对非高频节点使用使用短hash映射到共享空间，需要独立重排
-    from_node_lists = [ArrayList("%s/hid_%d_%s.idxarr.chunk_%d" % \
-                                 (output, i, FROM_COL, chunk_id),
+    from_node_lists = [ArrayList("%s/hid_%d_%s.idxarr.chunk_%d" % (output, i, FROM_COL, chunk_id),
                                  chunk_size=random_chunk_size(),
                                  dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)])
                        for i in range(FROM_SHORT_HASH)]
-    to_node_lists = [ArrayList("%s/hid_%d_%s.idxarr.chunk_%d" % \
-                               (output, i, TO_COL, chunk_id),
+    to_node_lists = [ArrayList("%s/hid_%d_%s.idxarr.chunk_%d" % (output, i, TO_COL, chunk_id),
                                chunk_size=random_chunk_size(),
                                dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)])
                      for i in range(TO_SHORT_HASH)]
@@ -106,17 +104,16 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
     os.makedirs(freq_output, exist_ok=True)
     ffdict_able_flag, tfdict_able_flag = False, False
     if FROM_COL in freq_nodes:
-        from_node_freq_dict = {fk: ArrayList("%s/hid_%s_%s.idxarr.chunk_%d" % \
-                                             (freq_output, str(fk), FROM_COL, chunk_id),
-                                             chunk_size=random_chunk_size(),
-                                             dtype=[('to', np.int64), ('ts', np.int32)])
-                               #   dtype=[('from', np.int64), ('to', np.int64)])
-                               for fk in list(freq_nodes[FROM_COL])}
+        from_node_freq_dict = {
+            fk: ArrayList("%s/hid_%s_%s.idxarr.chunk_%d" % (freq_output, str(fk), FROM_COL, chunk_id),
+                          chunk_size=random_chunk_size(),
+                          dtype=[('to', np.int64), ('ts', np.int32)])
+            #   dtype=[('from', np.int64), ('to', np.int64)])
+            for fk in list(freq_nodes[FROM_COL])}
         from_node_freq_dict_set = set(from_node_freq_dict.keys())
         ffdict_able_flag = True
     if TO_COL in freq_nodes:
-        to_node_freq_dict = {tk: ArrayList("%s/hid_%s_%s.idxarr.chunk_%d" % \
-                                           (freq_output, str(tk), TO_COL, chunk_id),
+        to_node_freq_dict = {tk: ArrayList("%s/hid_%s_%s.idxarr.chunk_%d" % (freq_output, str(tk), TO_COL, chunk_id),
                                            chunk_size=random_chunk_size(),
                                            dtype=[('to', np.int64), ('ts', np.int32)])
                              #   dtype=[('from', np.int64), ('to', np.int64)])
@@ -227,6 +224,9 @@ def merge_index_array_then_sort(graph):
 # merge_index_array_then_sort and its helper functions
 # ===================================Dividing line====================================================
 # hid_idx_merge
+# After this, we have an dict pointing to an array, dict storing nodes' relationships' starting cursor and length,
+# and array storing node's relationships
+# Files other than edges sort and edges mapper can be removed at this step, probably.
 
 def hid_idx_dict(graph, _id):
     # 所有short hid为_id的节点(不区分节点类型)索引全部都放入同一个字典中
@@ -290,7 +290,8 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
     for l in splitfile:
         seg = l[:-1].split(",")
         nid = chash(NODE_COL_HASH, seg[0])
-        node_cursor_lists[nid & SHORT_HASH_MASK].append((nid, NODE_FILE_HASH | cursor))
+        node_cursor_lists[nid & SHORT_HASH_MASK].append((nid, cursor))
+        # Don't understand why use (NODE_FILE_HASH | cursor) instead of directly using cursor, changed to cursor
         cursor += len(l)
 
     for arraylist in node_cursor_lists:

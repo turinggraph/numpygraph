@@ -66,16 +66,12 @@ class MergeIndex:
 
     @staticmethod
     def merge_freq_idx_to_callback(args):
-        # print("Callback function merge_freq_idx_to_callback with", args)
         # 针对高频节点边表merge处理，回调
         k, mems = args
         value = k
         index = MergeIndex.edge_to_cursor
         length = sum([m.shape[0] for m in mems])
-        # print("In this merge_freq_idx_to_callback this callback function...")
-        # print("value=", value, "index=", index, "length=", length)
         MergeIndex.freq_idx_pointer[value] = (index, length)
-        # print("And now we have freq_idx_pointer as", MergeIndex.freq_idx_pointer)
         for m in mems:
             MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + m.shape[0]]['value'] = m['to']
             MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + m.shape[0]]['ts'] = m['ts']
