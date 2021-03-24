@@ -282,28 +282,15 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
     splitfile = SplitFile(*splitfile_arguments)
     node_cursor_lists = [ArrayList("%s/hid_%d_%s.curarr.chunk_%d" % (output, i, NODE_COL, chunk_id),
                                    chunk_size=random_chunk_size(),
-                                   dtype=[('nid', np.int64), ('cursor', np.int64), ('bool_data', np.bool),
-                                          ('int_data', np.int), ('float_data', np.float)])
+                                   dtype=[('nid', np.int64), ('cursor', np.int64)])
                          for i in range(NODE_SHORT_HASH)]
     _l = next(splitfile)
     cursor = len(_l)
-    import ast
-
-    def parse(string_list):
-        re_list = []
-        for string in string_list:
-            try:
-                re_list.append(ast.literal_eval(string))
-            except:
-                re_list.append(string)
-        return re_list
 
     for l in splitfile:
         seg = l[:-1].split(",")
-        seg = parse(seg)
         nid = chash(NODE_COL_HASH, seg[0])
-        # boolean, int, float
-        node_cursor_lists[nid & SHORT_HASH_MASK].append((nid, NODE_FILE_HASH | cursor, False, 100, 99.9))
+        node_cursor_lists[nid & SHORT_HASH_MASK].append((nid, NODE_FILE_HASH | cursor))
         cursor += len(l)
 
     for arraylist in node_cursor_lists:
@@ -336,11 +323,10 @@ def merge_node_cursor_dict(graph, _id):
     # file seek has time complexity of O(1) if given the file pointer (here, cursor).
     idxarr = [np.memmap(f,
                         mode='r',
-                        dtype=[('idx', np.int64),
-                               ('cursor', np.int64),
-                               ('bool_data', np.bool),
-                               ('int_data', np.int),
-                               ('float_data', np.float)])
+                        dtype=[
+                            ('idx', np.int64),
+                            ('cursor', np.int64),
+                        ])
               for f in glob.glob(f"{graph}/node_*.csv.curarr/hid_%d_*.curarr.chunk*" % _id)]
     nodes_cursor_sum = sum([i.shape[0] for i in idxarr])
     os.makedirs(f"{graph}/nodes_mapper", exist_ok=True)
@@ -348,20 +334,52 @@ def merge_node_cursor_dict(graph, _id):
                       memmap=True,
                       item_size=nodes_cursor_sum,
                       hash_heap_rate=0.5,
-                      value_dtype=[('cursor', np.int64), ('bool_data', np.bool), ('int_data', np.int),
-                                   ('float_data', np.float)],
+                      value_dtype=[('cursor', np.int64)],
                       memmap_mode='w+')
 
     for _id, ia in enumerate(idxarr):
         adict[ia['idx']]['cursor'] = ia['cursor']
-        adict[ia['idx']]['bool_data'] = ia['bool_data']
-        adict[ia['idx']]['int_data'] = ia['int_data']
-        adict[ia['idx']]['float_data'] = ia['float_data']
 
 
 def merge_node_index(graph):
     p = Pool(processes=cpu_count())
     stime = time.time()
-    res = p.starmap(merge_node_cursor_dict, [(graph, i) for i in range(64)])
+    p.starmap(merge_node_cursor_dict, [(graph, i) for i in range(64)])
     print(time.time() - stime)
     pass
+
+
+# merge_node_index
+# ===================================Dividing line====================================================
+# load
+
+def load(dataset, graph):
+    print(f"Dataset: {dataset}\nGraph: {graph}")
+
+    stime = time.time()
+    print("T1:", stime)
+
+    # Prepare relations
+    Context.load_node_type_hash(f"{graph}/node_type_id.json")
+    Context.load_node_file_hash(f"{graph}/node_file_id.json")
+    Context.prepare_relations(glob.glob(f"{dataset}/relation_*.csv"))
+    Context.prepare_nodes(glob.glob(f"{dataset}/node_*.csv"))
+
+    # Process relationships
+    print("Relationship Index Transforming...")
+    relationship2indexarray(dataset, graph)
+    print(f"Index resorted to edge mergeing...")
+    merge_index_array_then_sort(graph)
+    print(f"Graph index merge by hashid...")
+    hid_idx_merge(graph)
+    print("Merge success")
+
+    # Process nodes
+    print(f"Node to hashid transforming...")
+    node2indexarray(dataset, graph)
+    print(f"Node index mapping...")
+    merge_node_index(graph)
+
+    etime = time.time()
+    print("T2:", etime)
+    print("DT:", etime - stime)
