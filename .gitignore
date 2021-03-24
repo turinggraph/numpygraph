@@ -1,0 +1,8 @@
+# Ignore macOS finder file
+.DS_Store
+
+# Ignore PyCharm generated file
+.idea/
+
+# Ignore __pycache__
+__pycache__/
