@@ -4,6 +4,7 @@ import time
 import os
 import re
 from collections import defaultdict, Counter
+import multiprocessing
 from multiprocessing import Pool, cpu_count
 import random
 
@@ -355,6 +356,9 @@ def merge_node_index(graph):
 # load
 
 def load(dataset, graph):
+    # Use fork instead of spawn to start processes so that all resources are inherited.
+    # "Available on Unix only. The default on Unix."  -- quote https://docs.python.org/3/library/multiprocessing.html
+    multiprocessing.set_start_method('fork')
     print(f"Dataset: {dataset}\nGraph: {graph}")
 
     stime = time.time()

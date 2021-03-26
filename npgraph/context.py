@@ -6,14 +6,9 @@ import re
 class Context:
     NODE_TYPE = {}
     NODE_FILE = {}
-    NODE_ATTR = {}
-    NODE_NUM = {}
     node_type_path = None
     node_file_path = None
 
-    # no "self" passed in, we only use one instance of Context
-
-    # There's nothing about the type of the nodes' contents, it's all about their type and the relationship file hash
     def prepare_nodes(node_files):
         for fn in node_files:
             # Context.count_node(fn)
