@@ -44,7 +44,7 @@ class ArrayList():
             self.array_current = self.arrays[array_index]
             self.array_cursor += 1
         self.array_current[array_local_cursor] = value
-        #         self.arrays[array_index][array_local_cursor] = value
+        # self.arrays[array_index][array_local_cursor] = value
         self.tail_cursor += 1
 
     def close(self, merge=True):

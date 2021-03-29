@@ -1,7 +1,5 @@
 import numpy as np
 
-from npgraph.tools.splitfile import SplitFile
-from npgraph.tools.arraylist import ArrayList
 from npgraph.tools.arraydict import ArrayDict
 from npgraph.context import Context
 from npgraph.tools.hash import chash
@@ -35,16 +33,17 @@ class Read:
         else:
             if node_type_hash == -1:
                 node_type_hash = Context.node_type_hash(node_type)
-        node_hash = chash(node_type_hash, node_val)
-        for chunk_num in range(64):
-            print("memmap_path=", f"{Read.graph}/nodes_mapper/hid_%d.dict.arr" % chunk_num)
-            adict = ArrayDict(memmap_path=f"{Read.graph}/edges_mapper/hid_%d.dict.arr" % chunk_num,
-                              value_dtype=[('cursor', np.int64)])
-            if node_hash in adict:
-                cursor = adict[node_hash]['cursor']
-            with open(f"{Read.graph}/node_*.csv.curarr/hid_%d_*.curarr.chunk*" % node_hash) as f:
-                f.seek(cursor)
+        node_hash = chash(node_type_hash, node_val)  # nid
+        node_short_id = node_hash & Read.SHORT_HASH_MASK
+        adict = ArrayDict(memmap_path=f"{Read.graph}/nodes_mapper/hid_{node_short_id}.dict.arr",
+                          value_dtype=[('cursor', np.int64)], memmap_mode='r')
+        # print(adict.file_path)
+        node_hash_asarray = np.asarray([node_hash])
+        cursors = adict[node_hash_asarray]
+        # print(cursors)
+        cursor = cursors[0][0]
+        print(cursor)
+        with open(f"{Read.dataset}/node_{node_type}.csv") as f:
+            f.seek(cursor)
             node_info = f.readline()
-            return node_info
-        return ""
-        pass
+        return node_info

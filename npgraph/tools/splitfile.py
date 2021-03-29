@@ -7,11 +7,11 @@ class SplitFile():
 
     @staticmethod
     def split(path, num, jump=0, dist_random=False, single_threshold=int(1024 ** 2)):
-        '''dist_random: 文件是否采用随机切割
+        """dist_random: 文件是否采用随机切割
         True: 随机切割
         False: 均匀切割
         single_threshold: 文件小于该值不做切割
-        '''
+        """
         f = open(path)
         for _ in range(jump):
             f.readline()

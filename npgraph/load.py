@@ -286,14 +286,18 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
                                    dtype=[('nid', np.int64), ('cursor', np.int64)])
                          for i in range(NODE_SHORT_HASH)]
     _l = next(splitfile)
-    cursor = len(_l)
+    cursor = splitfile.tell()
+    # cursor = len(_l)
+    # using the cursor in splitfile through the function tell is a much safer way to index the line info
 
     for l in splitfile:
         seg = l[:-1].split(",")
         nid = chash(NODE_COL_HASH, seg[0])
         node_cursor_lists[nid & SHORT_HASH_MASK].append((nid, cursor))
         # Don't understand why use (NODE_FILE_HASH | cursor) instead of directly using cursor, changed to cursor
-        cursor += len(l)
+        cursor = splitfile.tell()
+        # cursor += len(l)
+        # reason identical to the one given above
 
     for arraylist in node_cursor_lists:
         arraylist.close(merge=False)
@@ -339,8 +343,9 @@ def merge_node_cursor_dict(graph, _id):
                       value_dtype=[('cursor', np.int64)],
                       memmap_mode='w+')
 
-    for _id, ia in enumerate(idxarr):
-        adict[ia['idx']]['cursor'] = ia['cursor']
+    for _, ia in enumerate(idxarr):
+        # using _id (as we previously did) would cause the _id in the local scope to change, not so safe
+        adict[ia['idx']] = ia['cursor']
 
 
 def merge_node_index(graph):
@@ -354,11 +359,31 @@ def merge_node_index(graph):
 # merge_node_index
 # ===================================Dividing line====================================================
 # load
+def load_relationships(dataset, graph):
+    print("Relationship Index Transforming...")
+    relationship2indexarray(dataset, graph)
+    print(f"Index resorted to edge mergeing...")
+    merge_index_array_then_sort(graph)
+    print(f"Graph index merge by hashid...")
+    hid_idx_merge(graph)
+    print("Merge success")
+
+
+def load_nodes(dataset, graph):
+    print(f"Node to hashid transforming...")
+    node2indexarray(dataset, graph)
+    print(f"Node index mapping...")
+    merge_node_index(graph)
+
 
 def load(dataset, graph):
     # Use fork instead of spawn to start processes so that all resources are inherited.
     # "Available on Unix only. The default on Unix."  -- quote https://docs.python.org/3/library/multiprocessing.html
     multiprocessing.set_start_method('fork')
+
+    # print with no omission
+    np.set_printoptions(threshold=np.inf)
+
     print(f"Dataset: {dataset}\nGraph: {graph}")
 
     stime = time.time()
@@ -371,19 +396,10 @@ def load(dataset, graph):
     Context.prepare_nodes(glob.glob(f"{dataset}/node_*.csv"))
 
     # Process relationships
-    print("Relationship Index Transforming...")
-    relationship2indexarray(dataset, graph)
-    print(f"Index resorted to edge mergeing...")
-    merge_index_array_then_sort(graph)
-    print(f"Graph index merge by hashid...")
-    hid_idx_merge(graph)
-    print("Merge success")
+    load_relationships(dataset, graph)
 
     # Process nodes
-    print(f"Node to hashid transforming...")
-    node2indexarray(dataset, graph)
-    print(f"Node index mapping...")
-    merge_node_index(graph)
+    load_nodes(dataset, graph)
 
     etime = time.time()
     print("T2:", etime)

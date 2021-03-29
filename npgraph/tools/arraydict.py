@@ -42,18 +42,33 @@ class ArrayDict():
     CONFIG_CHAIN_CURSOR = -1
     CONFIG_ITEM_SIZE = -2
     CONFIG_HASH_HEAP_SIZE = -3
+    # Just for convenience, store the file_path here
+    file_path = ""
 
     def __init__(self, item_size=None, hash_heap_rate=0.5, memmap=False, memmap_path=None,
                  memmap_mode='r+', value_dtype=np.int32, item_get_cursor=False):
+        self.file_path = memmap_path
         # 在HEAP最尾部的三个值约定为(chain_cursor, item_size, HASH_HEAP_SIZE)
         # 如果不给item_size, 说明是读模式
         self.item_get_cursor = item_get_cursor
-        if item_size is None:
-            self.HEAP = np.memmap(memmap_path,
+        # Critical problem here.
+        # This is what we previously did:
+        # if item_size is None:
+        #     read self.HEAP
+        #     set item_size to size of self.HEAP (something not None)
+        # Do something else
+        # if item_size is not None:
+        #     set self.HEAP to an empty memmap
+        #
+        # Quite obviously, we can never read any ArrayDict from the disk this way
+        is_New = item_size is not None
+        if not is_New:
+            self.HEAP = np.memmap(filename=memmap_path,
                                   dtype=[('key', np.int64),
                                          ('value', value_dtype),
                                          ('next', np.int32)],
                                   mode=memmap_mode)
+            # print(self.HEAP)
             item_size = self.HEAP[self.CONFIG_ITEM_SIZE][0]
             hash_heap_size = self.HEAP[self.CONFIG_HASH_HEAP_SIZE][0]
         if 'hash_heap_size' in vars():
@@ -68,7 +83,7 @@ class ArrayDict():
         self.SCALE = int(self.ORIGIN_HASH_HEAP_SIZE_DIV_10 / (self.HASH_HEAP_SIZE / 10))
         self.ZERO_BIAS = self.HASH_HEAP_SIZE // 2 + 1
         self.value_dtype = value_dtype
-        if item_size is not None:  # 根据 item_size 新建
+        if is_New:  # 根据 item_size 新建  # second part of the critical problem
             if not memmap:
                 self.HEAP = np.zeros((self.HASH_HEAP_SIZE + self.CHAIN_HEAP_SIZE),
                                      dtype=[('key', np.int64), ('value', self.value_dtype),
@@ -87,12 +102,7 @@ class ArrayDict():
             self.HEAP[self.CONFIG_ITEM_SIZE][0] = item_size
 
     def __setitem__(self, key, value):
-        # expect_cursor = (key % self.HASH_HEAP_SIZE)
         expect_cursor = (key // self.SCALE) + self.ZERO_BIAS
-        # print("type of key", type(key))
-        # key is a numpy.memmap
-        # print("type of expect_error", type(expect_cursor))
-        # expect_cursor is a numpy.ndarray
         # 解决batch insert hash冲突问题, 强制将有冲突的hash分成多个batch插入
         while len(expect_cursor) != 0:
             _, current_index = np.unique(expect_cursor, return_index=True)
