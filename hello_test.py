@@ -1,6 +1,4 @@
 # -*- coding:utf-8 -*-
-import pytest
-
 # @pytest.fixture(scope='function')
 # def setup_function(request):
 #     def teardown_function():
@@ -24,7 +22,6 @@ def test_2():
     print('Test_2 called.')
 
 
-
 def test_4():
     print('Test_4 called.')
-    assert 2==1+1   
+    assert 2 == 1 + 1
