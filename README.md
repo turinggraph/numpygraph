@@ -1,3 +1,3 @@
-# numpygraph ![badge](https://github.com/turinggraph/numpygraph/workflows/Python%20application/badge.svg)
+# numpygraph ![badge](https://github.com/turinggraph/numpygraph/workflows/numpygraph test/badge.svg)
 imploement graph deep and normal algorithm base on numpy
 
