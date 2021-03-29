@@ -1,2 +1,2 @@
 # numpygraph
-impolement graph deep and normal algrithom base on numpy
+imploement graph deep and normal algorithm base on numpy

@@ -34,3 +34,7 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+        
+  branding:
+    icon: 'award'  
+    color: 'green'
