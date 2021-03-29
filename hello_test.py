@@ -23,9 +23,7 @@ import pytest
 def test_2():
     print('Test_2 called.')
 
-def test_3():
-    print('Test_3 called.')
-    assert 2==1+1     
+
 
 def test_4():
     print('Test_4 called.')
