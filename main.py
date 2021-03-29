@@ -1,5 +1,5 @@
-from npgraph.load import load
-from npgraph.read import Read
+from numpygraph.load import load
+from numpygraph.read import Read
 
 
 def main():

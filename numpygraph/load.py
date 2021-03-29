@@ -8,12 +8,12 @@ import multiprocessing
 from multiprocessing import Pool, cpu_count
 import random
 
-from npgraph.tools.splitfile import SplitFile
-from npgraph.tools.arraylist import ArrayList
-from npgraph.tools.arraydict import ArrayDict
-from npgraph.tools.hash import chash
-from npgraph.context import Context
-from npgraph.mergeindex import MergeIndex
+from numpygraph.tools.splitfile import SplitFile
+from numpygraph.tools.arraylist import ArrayList
+from numpygraph.tools.arraydict import ArrayDict
+from numpygraph.tools.hash import chash
+from numpygraph.context import Context
+from numpygraph.mergeindex import MergeIndex
 
 
 def lines_sampler(relationship_files):
@@ -21,25 +21,25 @@ def lines_sampler(relationship_files):
     """
     key_sample_lines, nodes_line_num = defaultdict(list), defaultdict(int)
     for relation in relationship_files:
-        relation, basename = os.path.abspath(relation), os.path.basename(relation)
+        relation, _ = os.path.abspath(relation), os.path.basename(relation)
         with open(relation) as f:
-            l = f.readline()
-            from_col, to_col = re.findall("\((.+?)\)", l)
+            line = f.readline()
+            from_col, to_col = re.findall("\((.+?)\)", line)
         splitfiles = SplitFile.split(relation, num=200, jump=1)
         filesize = os.path.getsize(relation)
 
         def sample_lines(sfs, cnt=1000):
             for arg in sfs:
                 sf, i = SplitFile(*arg), 0
-                for l in sf:
+                for line in sf:
                     if i > cnt:
                         break
-                    yield l
+                    yield line
                     i += 1
 
         lines = list(sample_lines(splitfiles))
-        for l in lines:
-            keys = l.replace("\n", "").split(",")
+        for line in lines:
+            keys = line.replace("\n", "").split(",")
             if len(keys) != 3:
                 continue
             key_sample_lines[from_col].append(keys[0])
@@ -89,8 +89,10 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
 
     splitfile = SplitFile(*splitfile_arguments)
     os.makedirs(output, exist_ok=True)
+
     # 随机块大小是为了让进程吃资源的节奏错开
-    random_chunk_size = lambda: random.randint(300000, 600000)
+    def random_chunk_size():
+        return random.randint(300000, 600000)
     # 针对非高频节点使用使用短hash映射到共享空间，需要独立重排
     from_node_lists = [ArrayList("%s/hid_%d_%s.idxarr.chunk_%d" % (output, i, FROM_COL, chunk_id),
                                  chunk_size=random_chunk_size(),
@@ -272,8 +274,8 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
     output = f"{output}"
     os.makedirs(output, exist_ok=True)
     with open(splitfile_arguments[0]) as f:
-        l = f.readline()
-        NODE_COL, = re.findall("\((.+?)\)", l)
+        line = f.readline()
+        NODE_COL, = re.findall("\((.+?)\)", line)
         NODE_FILE_HASH = Context.node_file_hash(splitfile_arguments[0])
         NODE_COL_HASH = Context.node_type_hash(NODE_COL)
     # FROM_SHORT_HASH, TO_SHORT_HASH = NODES_SHORT_HASH[FROM_COL], NODES_SHORT_HASH[TO_COL]

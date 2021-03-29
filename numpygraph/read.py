@@ -1,8 +1,8 @@
 import numpy as np
 
-from npgraph.tools.arraydict import ArrayDict
-from npgraph.context import Context
-from npgraph.tools.hash import chash
+from numpygraph.tools.arraydict import ArrayDict
+from numpygraph.context import Context
+from numpygraph.tools.hash import chash
 
 
 class Read:
