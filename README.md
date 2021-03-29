@@ -1,2 +1,4 @@
-# numpygraph
-impolement graph deep and normal algrithom base on numpy
+
+# numpygraph ![badge](https://github.com/turinggraph/numpygraph/workflows/test/badge.svg)
+imploement graph deep and normal algorithm base on numpy
+

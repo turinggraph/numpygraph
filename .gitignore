@@ -1,3 +1,4 @@
+
 # Ignore macOS finder file
 .DS_Store
 
@@ -6,3 +7,4 @@
 
 # Ignore __pycache__
 __pycache__/
+.pytest_cache
