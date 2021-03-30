@@ -2,10 +2,10 @@
 .PHONY: doc
 
 doc-upload: doc-build
-	cp -r docs/build/html/* ../numpygraph.github.io
-	cd ../numpygraph.github.io
-	git add -A
-	git commit -am autopush
+	cp -r docs/build/html/* ../numpygraph.github.io; \
+	cd ../numpygraph.github.io; \
+	git add -A; \
+	git commit -am autopush; \
 	git push
 
 doc-build:
