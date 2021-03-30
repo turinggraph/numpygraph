@@ -10,10 +10,19 @@ Welcome to numpygraph's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-API
-===
-.. automodule:: run
-   :members:
+
+
+
+   
+
+.. toctree::
+   :maxdepth: 3
+   :caption: API
+ 
+   numpygraph
+
+.. .. automodule:: numpygraph
+..    :members:
 
 
 Indices and tables

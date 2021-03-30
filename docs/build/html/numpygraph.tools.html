@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>numpygraph.tools package &mdash; numpygraph  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="numpygraph package" href="numpygraph.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> numpygraph
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="numpygraph.html">numpygraph package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="numpygraph.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">numpygraph.tools package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-numpygraph.tools.arraydict">numpygraph.tools.arraydict module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-numpygraph.tools.arraylist">numpygraph.tools.arraylist module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-numpygraph.tools.hash">numpygraph.tools.hash module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-numpygraph.tools.splitfile">numpygraph.tools.splitfile module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-numpygraph.tools">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.html#module-numpygraph.context">numpygraph.context module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.html#module-numpygraph.load">numpygraph.load module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.html#module-numpygraph.mergeindex">numpygraph.mergeindex module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.html#module-numpygraph.read">numpygraph.read module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.html#module-numpygraph">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">numpygraph</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="numpygraph.html">numpygraph package</a> &raquo;</li>
+        
+      <li>numpygraph.tools package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/numpygraph.tools.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="numpygraph-tools-package">
+<h1>numpygraph.tools package<a class="headerlink" href="#numpygraph-tools-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-numpygraph.tools.arraydict">
+<span id="numpygraph-tools-arraydict-module"></span><h2>numpygraph.tools.arraydict module<a class="headerlink" href="#module-numpygraph.tools.arraydict" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="numpygraph.tools.arraydict.ArrayDict">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">numpygraph.tools.arraydict.</span></code><code class="sig-name descname"><span class="pre">ArrayDict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">item_size=None</span></em>, <em class="sig-param"><span class="pre">hash_heap_rate=0.5</span></em>, <em class="sig-param"><span class="pre">memmap=False</span></em>, <em class="sig-param"><span class="pre">memmap_path=None</span></em>, <em class="sig-param"><span class="pre">memmap_mode='r+'</span></em>, <em class="sig-param"><span class="pre">value_dtype=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></em>, <em class="sig-param"><span class="pre">item_get_cursor=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.arraydict.ArrayDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>基于numpy memmap 实现的字典</p>
+<dl class="py attribute">
+<dt id="numpygraph.tools.arraydict.ArrayDict.CONFIG_CHAIN_CURSOR">
+<code class="sig-name descname"><span class="pre">CONFIG_CHAIN_CURSOR</span></code><em class="property"> <span class="pre">=</span> <span class="pre">-1</span></em><a class="headerlink" href="#numpygraph.tools.arraydict.ArrayDict.CONFIG_CHAIN_CURSOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="numpygraph.tools.arraydict.ArrayDict.CONFIG_HASH_HEAP_SIZE">
+<code class="sig-name descname"><span class="pre">CONFIG_HASH_HEAP_SIZE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">-3</span></em><a class="headerlink" href="#numpygraph.tools.arraydict.ArrayDict.CONFIG_HASH_HEAP_SIZE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="numpygraph.tools.arraydict.ArrayDict.CONFIG_ITEM_SIZE">
+<code class="sig-name descname"><span class="pre">CONFIG_ITEM_SIZE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">-2</span></em><a class="headerlink" href="#numpygraph.tools.arraydict.ArrayDict.CONFIG_ITEM_SIZE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="numpygraph.tools.arraydict.ArrayDict.WITHOUT_NEXT_MAGIC">
+<code class="sig-name descname"><span class="pre">WITHOUT_NEXT_MAGIC</span></code><em class="property"> <span class="pre">=</span> <span class="pre">-1</span></em><a class="headerlink" href="#numpygraph.tools.arraydict.ArrayDict.WITHOUT_NEXT_MAGIC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="numpygraph.tools.arraydict.ArrayDict.file_path">
+<code class="sig-name descname"><span class="pre">file_path</span></code><em class="property"> <span class="pre">=</span> <span class="pre">''</span></em><a class="headerlink" href="#numpygraph.tools.arraydict.ArrayDict.file_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="numpygraph.tools.arraydict.ArrayDict.get_value">
+<code class="sig-name descname"><span class="pre">get_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cursor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.arraydict.ArrayDict.get_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="numpygraph.tools.arraydict.ArrayDict.set_value">
+<code class="sig-name descname"><span class="pre">set_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cursor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.arraydict.ArrayDict.set_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>插入存在链表的新增关系， 这部分要保证 cursor 不允许重复</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="numpygraph.tools.arraydict.HashSplitDict">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">numpygraph.tools.arraydict.</span></code><code class="sig-name descname"><span class="pre">HashSplitDict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">path</span></em>, <em class="sig-param"><span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></em>, <em class="sig-param"><span class="pre">hlen=64</span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.arraydict.HashSplitDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>分块字典集中管理</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-numpygraph.tools.arraylist">
+<span id="numpygraph-tools-arraylist-module"></span><h2>numpygraph.tools.arraylist module<a class="headerlink" href="#module-numpygraph.tools.arraylist" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="numpygraph.tools.arraylist.ArrayList">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">numpygraph.tools.arraylist.</span></code><code class="sig-name descname"><span class="pre">ArrayList</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.arraylist.ArrayList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>基于numpy memmap 实现的列表
+.. todo:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">批量增加</span>
+<span class="n">merge后表的读取</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="numpygraph.tools.arraylist.ArrayList.append">
+<code class="sig-name descname"><span class="pre">append</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.arraylist.ArrayList.append" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="numpygraph.tools.arraylist.ArrayList.close">
+<code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">merge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.arraylist.ArrayList.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="numpygraph.tools.arraylist.ArrayList.flush">
+<code class="sig-name descname"><span class="pre">flush</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.arraylist.ArrayList.flush" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="numpygraph.tools.arraylist.ArrayList.path">
+<code class="sig-name descname"><span class="pre">path</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.arraylist.ArrayList.path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-numpygraph.tools.hash">
+<span id="numpygraph-tools-hash-module"></span><h2>numpygraph.tools.hash module<a class="headerlink" href="#module-numpygraph.tools.hash" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="numpygraph.tools.hash.chash">
+<code class="sig-prename descclassname"><span class="pre">numpygraph.tools.hash.</span></code><code class="sig-name descname"><span class="pre">chash</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.hash.chash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-numpygraph.tools.splitfile">
+<span id="numpygraph-tools-splitfile-module"></span><h2>numpygraph.tools.splitfile module<a class="headerlink" href="#module-numpygraph.tools.splitfile" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="numpygraph.tools.splitfile.SplitFile">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">numpygraph.tools.splitfile.</span></code><code class="sig-name descname"><span class="pre">SplitFile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_to</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.splitfile.SplitFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>分片文件</p>
+<dl class="py method">
+<dt id="numpygraph.tools.splitfile.SplitFile.split">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">split</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jump</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1048576</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.splitfile.SplitFile.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>dist_random: 文件是否采用随机切割
+True: 随机切割
+False: 均匀切割
+single_threshold: 文件小于该值不做切割</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="numpygraph.tools.splitfile.SplitFile.tell">
+<code class="sig-name descname"><span class="pre">tell</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.tools.splitfile.SplitFile.tell" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-numpygraph.tools">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-numpygraph.tools" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="numpygraph.html" class="btn btn-neutral float-left" title="numpygraph package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, hp027.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
