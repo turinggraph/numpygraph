@@ -13,9 +13,9 @@ jobs:
 
     steps:
     - name: detect
-      run: |
-        ls
-        ls docs/build/html
+      run: >-
+        ls;
+        ls docs/build/html;
         ls ../
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
