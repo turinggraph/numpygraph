@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: make tmp directory for apidoc generator confliction
       run: >-
-        mkdir /tmp
+        echo "log fake" > /tmp/sphinx-log
     - uses: ammaraskar/sphinx-action@master
       with:
         docs-folder: "docs/"
