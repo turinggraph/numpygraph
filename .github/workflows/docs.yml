@@ -14,8 +14,9 @@ jobs:
     steps:
     - name: detect
       run: >-
-        ls;
-        ls ../
+         echo `ls`;
+         echo `ls ../`;
+         echo `ls docs`;
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
