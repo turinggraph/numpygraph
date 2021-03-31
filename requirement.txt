@@ -3,3 +3,4 @@ fuzzyfinder
 prompt_toolkit
 click
 twine
+numpy
