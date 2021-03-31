@@ -15,7 +15,7 @@ doc-build:
 	@echo doc updated
 
 
-pypi-upload:
+pypi-upload: pypi-build
 	@echo pypi build
 	@echo pypi updating
 	python3 -m twine upload --repository pypi build/dist/*
@@ -28,3 +28,5 @@ pypi-build:
 	rm -r dist *.egg-info 
 
 upload-all: pypi-upload doc-upload
+
+
