@@ -21,4 +21,5 @@ jobs:
         external_repository: numpygraph/numpygraph.github.io
         publish_branch: main  # default: gh-pages
         publish_dir: docs/build/html
+        cname: numpygraph.org
 
