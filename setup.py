@@ -25,5 +25,5 @@ setuptools.setup(
       ]
     },
     python_requires='>=3.6',
-    install_requires=open("./requirement.txt", "r").read().strip().split("\n"),
+    install_requires=open("./requirements.txt", "r").read().strip().split("\n"),
 )
