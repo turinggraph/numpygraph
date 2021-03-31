@@ -12,11 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: detect
-      run: >-
-         echo `ls`;
-         echo `ls ../`;
-         echo `ls docs`;
+    - uses: actions/checkout@v2
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
