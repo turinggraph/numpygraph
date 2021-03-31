@@ -1,3 +1,4 @@
+import sys
 from npgraph.load import load
 from npgraph.read import Read
 
@@ -5,8 +6,8 @@ from npgraph.read import Read
 def main():
     argv = [
         "/Users/hanry/Documents/npgraph/data/graphset_lite_attr.csv",
+        # "/Users/hanry/Documents/npgraph/data/info",
         "/Users/hanry/Documents/npgraph/data/graph",
-        3
     ]
 
     load(argv[0], argv[1])
