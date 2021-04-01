@@ -14,7 +14,7 @@ class Read:
         Read.graph = graph_loc
         Read.dataset = dataset_loc
 
-    def find_adjacent(node_val, node_type=-1, node_type_hash=-1):
+    def find_relationships(node_val, node_type=-1, node_type_hash=-1):
         if node_type == -1 and node_type_hash == -1:
             return -1
         else:
@@ -23,9 +23,21 @@ class Read:
         node_hash = chash(node_type_hash, node_val)
         freq_val = node_hash
         infreq_val = node_hash & Read.SHORT_HASH_MASK
-        sorted_edges = np.memmap(f"{Read.graph}/concat.to.arr",
-                                 mode='r',
-                                 dtype=[('index', np.int64), ('value', np.int64), ('ts', np.int32)])
+        value_asarray = np.asarray([freq_val, infreq_val])
+        adict = ArrayDict(memmap_path=f"{Read.graph}/edges_mapper/hid_{infreq_val}.dict.arr",
+                          value_dtype=[('index', np.int64), ('length', np.int32)], memmap_mode='r')
+        loc = adict[value_asarray]
+
+        toarrconcat = np.memmap(f"{Read.graph}/concat.to.arr",
+                                mode='r',
+                                order='F',
+                                dtype=[('index', np.int64), ('value', np.int64), ('ts', np.int32)])
+        relationships = []
+        for (index, length) in loc:
+            relationships.extend(np.copy(toarrconcat[index: index + length]))
+
+        # print(result)
+        return relationships
 
     def node_info(node_val, node_type=-1, node_type_hash=-1):
         if node_type == -1 and node_type_hash == -1:
@@ -42,7 +54,7 @@ class Read:
         cursors = adict[node_hash_asarray]
         # print(cursors)
         cursor = cursors[0][0]
-        print(cursor)
+        # print(cursor)
         with open(f"{Read.dataset}/node_{node_type}.csv") as f:
             f.seek(cursor)
             node_info = f.readline()

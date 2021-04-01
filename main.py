@@ -1,17 +1,19 @@
+import sys
 from numpygraph.load import load
 from numpygraph.read import Read
-
 
 def main():
     argv = [
         "/Users/hanry/Documents/npgraph/data/graphset_lite_attr.csv",
+        # "/Users/hanry/Documents/npgraph/data/info",
         "/Users/hanry/Documents/npgraph/data/graph",
-        3
     ]
 
     load(argv[0], argv[1])
 
     Read.init(argv[0], argv[1])
+
+    print(Read.find_relationships("1b701bdd-3400-47dd-9307-c57f52e4f0a0", "event_id", -1))
 
     print(Read.node_info("e548369d-a0f9-4ed4-8be3-c13963b57fa7", "event_id", -1))
 

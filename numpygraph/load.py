@@ -253,7 +253,7 @@ def hid_idx_dict(graph, _id):
                       value_dtype=[('index', np.int64), ('length', np.int32)],
                       memmap_mode='w+')
 
-    for _id, ia in enumerate(idxarr):
+    for _, ia in enumerate(idxarr):
         adict[ia['value']] = ia[['index', 'length']]
     # freq部分实际上是被重复写入到全部 hash short_dict中了
     adict[freqarr['value']] = freqarr[['index', 'length']]
