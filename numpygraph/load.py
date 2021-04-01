@@ -8,10 +8,10 @@ import multiprocessing
 from multiprocessing import Pool, cpu_count
 import random
 
-from numpygraph.tools.splitfile import SplitFile
-from numpygraph.tools.arraylist import ArrayList
-from numpygraph.tools.arraydict import ArrayDict
-from numpygraph.tools.hash import chash
+from numpygraph.lib.splitfile import SplitFile
+from numpygraph.core.arraylist import ArrayList
+from numpygraph.core.arraydict import ArrayDict
+from numpygraph.core.hash import chash
 from numpygraph.context import Context
 from numpygraph.mergeindex import MergeIndex
 
@@ -127,8 +127,12 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
     for line in splitfile:
         # from_str, to_str
         r = line[:-1].split(",")
-        if len(r) != 3:
-            continue
+        if len(r) < 3: 
+            # TODO: 最小限制应为2
+            # ts单独设列
+            # 属性单独设列
+            # DSL 变相支持
+            continue 
         try:
             h1, h2, ts = chash(FROM_COL_HASH, r[0]), chash(TO_COL_HASH, r[1]), int(r[2])
         except ValueError:
@@ -202,6 +206,7 @@ def merge_index_array_then_sort(graph):
 
     os.makedirs(f"{graph}/edges_sort", exist_ok=True)
     MergeIndex.edge_to_cursor = 0
+    print(f"{graph}/concat.to.arr", edges_count_sum)
     MergeIndex.toarrconcat = np.memmap(f"{graph}/concat.to.arr",
                                        mode='w+',
                                        shape=(edges_count_sum,),
@@ -239,11 +244,7 @@ def hid_idx_dict(graph, _id):
                                ('index', np.int64),
                                ('length', np.int32)])
               for f in glob.glob(f"{graph}/edges_sort/hid_%d_*.idx.arr" % _id)]
-    freqarr = np.memmap(f"{graph}/edges_sort/hid_freq.idx.arr",
-                        mode='r',
-                        dtype=[('value', np.int64),
-                               ('index', np.int64),
-                               ('length', np.int32)])
+
     edges_index_count_sum = sum([i.shape[0] for i in idxarr])
     os.makedirs(f"{graph}/edges_mapper", exist_ok=True)
     adict = ArrayDict(memmap_path=f"{graph}/edges_mapper/hid_%d.dict.arr" % _id,
@@ -256,12 +257,20 @@ def hid_idx_dict(graph, _id):
     for _, ia in enumerate(idxarr):
         adict[ia['value']] = ia[['index', 'length']]
     # freq部分实际上是被重复写入到全部 hash short_dict中了
-    adict[freqarr['value']] = freqarr[['index', 'length']]
+    hid_freq_path = f"{graph}/edges_sort/hid_freq.idx.arr"
+    if os.path.exists(hid_freq_path):
+        freqarr = np.memmap(hid_freq_path,
+                        mode='r',
+                        dtype=[('value', np.int64),
+                               ('index', np.int64),
+                               ('length', np.int32)])
+        adict[freqarr['value']] = freqarr[['index', 'length']]
 
 
 def hid_idx_merge(graph):
     p = Pool(processes=cpu_count())
     stime = time.time()
+    # TODO: BUG: 当样本过小时, hid连64个可能都凑不齐
     res = p.starmap(hid_idx_dict, [(graph, i) for i in range(64)])
     print(time.time() - stime)
 

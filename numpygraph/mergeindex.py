@@ -37,8 +37,7 @@ class MergeIndex:
     @staticmethod
     def merge_idx_to_callback(args):
         k, ipts, arr, _val, _idx, _len = args
-        #         print(ipts[0])
-        graph = "/" + "/".join(ipts[0].split("/")[:-2])
+        graph = "/".join(ipts[0].split("/")[:-2]) # TODO: 语意不明确
         idxarr = np.memmap(f"{graph}/edges_sort/{k}.idx.arr",
                            mode='w+',
                            order='F',
@@ -82,6 +81,9 @@ class MergeIndex:
     @staticmethod
     def freq_idx_pointer_dump(graph):
         # 针对高频节点->边索引表的处理
+        # TODO: 针对高频节点为空的异常处理
+        if len(MergeIndex.freq_idx_pointer) == 0:
+            return 
         idxarr = np.memmap(f"{graph}/edges_sort/hid_freq.idx.arr",
                            mode='w+',
                            order='F',

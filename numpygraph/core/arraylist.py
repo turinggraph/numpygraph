@@ -58,6 +58,7 @@ class ArrayList():
                             mode='w+',
                             dtype=self.dtype,
                             shape=(self.tail_cursor, 1))
+            
             cur = 0
             for array in self.arrays:
                 opt[cur: cur + min(array.shape[0], self.tail_cursor % self.chunk_size)] = \

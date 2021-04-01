@@ -1,8 +1,8 @@
 import numpy as np
 
-from numpygraph.tools.arraydict import ArrayDict
+from numpygraph.core.arraydict import ArrayDict
 from numpygraph.context import Context
-from numpygraph.tools.hash import chash
+from numpygraph.core.hash import chash
 
 
 class Read:
@@ -49,12 +49,12 @@ class Read:
         node_short_id = node_hash & Read.SHORT_HASH_MASK
         adict = ArrayDict(memmap_path=f"{Read.graph}/nodes_mapper/hid_{node_short_id}.dict.arr",
                           value_dtype=[('cursor', np.int64)], memmap_mode='r')
-        # print(adict.file_path)
+        print(adict.file_path)
         node_hash_asarray = np.asarray([node_hash])
         cursors = adict[node_hash_asarray]
-        # print(cursors)
+        print(cursors)
         cursor = cursors[0][0]
-        # print(cursor)
+        print(cursor)
         with open(f"{Read.dataset}/node_{node_type}.csv") as f:
             f.seek(cursor)
             node_info = f.readline()

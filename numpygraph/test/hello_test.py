@@ -6,7 +6,7 @@
 #     request.addfinalizer(teardown_function)  # 此内嵌函数做teardown工作
 #     print('setup_function called.')
 
-# @pytest.fixture(scope='module')
+# @pytest.fixture(scope='module') 
 # def setup_module(request):
 #     def teardown_module():
 #         print("teardown_module called.")
