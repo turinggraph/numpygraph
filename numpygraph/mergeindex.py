@@ -37,7 +37,8 @@ class MergeIndex:
     @staticmethod
     def merge_idx_to_callback(args):
         k, ipts, arr, _val, _idx, _len = args
-        graph = "/".join(ipts[0].split("/")[:-2]) # TODO: 语意不明确
+        # TODO: 语意不明确
+        graph = "/".join(ipts[0].split("/")[:-2])
         idxarr = np.memmap(f"{graph}/edges_sort/{k}.idx.arr",
                            mode='w+',
                            order='F',
@@ -51,8 +52,7 @@ class MergeIndex:
 
         MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + arr.shape[0]]['value'] = arr['to']
         MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + arr.shape[0]]['ts'] = arr['ts']
-        MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + arr.shape[0]]['index'] = arr[
-            'from']
+        MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + arr.shape[0]]['index'] = arr['from']
         MergeIndex.edge_to_cursor += arr.shape[0]
 
     @staticmethod
@@ -83,7 +83,7 @@ class MergeIndex:
         # 针对高频节点->边索引表的处理
         # TODO: 针对高频节点为空的异常处理
         if len(MergeIndex.freq_idx_pointer) == 0:
-            return 
+            return
         idxarr = np.memmap(f"{graph}/edges_sort/hid_freq.idx.arr",
                            mode='w+',
                            order='F',

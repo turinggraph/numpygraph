@@ -127,7 +127,7 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
     for line in splitfile:
         # from_str, to_str
         r = line[:-1].split(",")
-        if len(r) < 3: 
+        if len(r) < 3:
             # TODO: 最小限制应为2
             # ts单独设列
             # 属性单独设列
@@ -260,10 +260,10 @@ def hid_idx_dict(graph, _id):
     hid_freq_path = f"{graph}/edges_sort/hid_freq.idx.arr"
     if os.path.exists(hid_freq_path):
         freqarr = np.memmap(hid_freq_path,
-                        mode='r',
-                        dtype=[('value', np.int64),
-                               ('index', np.int64),
-                               ('length', np.int32)])
+                            mode='r',
+                            dtype=[('value', np.int64),
+                                   ('index', np.int64),
+                                   ('length', np.int32)])
         adict[freqarr['value']] = freqarr[['index', 'length']]
 
 
@@ -271,7 +271,7 @@ def hid_idx_merge(graph):
     p = Pool(processes=cpu_count())
     stime = time.time()
     # TODO: BUG: 当样本过小时, hid连64个可能都凑不齐
-    res = p.starmap(hid_idx_dict, [(graph, i) for i in range(64)])
+    _ = p.starmap(hid_idx_dict, [(graph, i) for i in range(64)])
     print(time.time() - stime)
 
 
@@ -280,29 +280,30 @@ def hid_idx_merge(graph):
 # node2indexarray
 
 def node2idxarr(output, splitfile_arguments, chunk_id):
+    def random_chunk_size():
+        return random.randint(300000, 600000)
     output = f"{output}"
     os.makedirs(output, exist_ok=True)
     with open(splitfile_arguments[0]) as f:
         line = f.readline()
         NODE_COL, = re.findall("\((.+?)\)", line)
-        NODE_FILE_HASH = Context.node_file_hash(splitfile_arguments[0])
+        # TODO: NODE_FILE_HASH = Context.node_file_hash(splitfile_arguments[0])
         NODE_COL_HASH = Context.node_type_hash(NODE_COL)
     # FROM_SHORT_HASH, TO_SHORT_HASH = NODES_SHORT_HASH[FROM_COL], NODES_SHORT_HASH[TO_COL]
     # 固定为64的原因主要还是考虑后续会映射到edge dict中, 统一使用64bin去切割
     NODE_SHORT_HASH, SHORT_HASH_MASK = 64, (1 << 6) - 1
-    random_chunk_size = lambda: random.randint(300000, 600000)
     splitfile = SplitFile(*splitfile_arguments)
     node_cursor_lists = [ArrayList("%s/hid_%d_%s.curarr.chunk_%d" % (output, i, NODE_COL, chunk_id),
                                    chunk_size=random_chunk_size(),
                                    dtype=[('nid', np.int64), ('cursor', np.int64)])
                          for i in range(NODE_SHORT_HASH)]
-    _l = next(splitfile)
+    _ = next(splitfile)
     cursor = splitfile.tell()
     # cursor = len(_l)
     # using the cursor in splitfile through the function tell is a much safer way to index the line info
 
-    for l in splitfile:
-        seg = l[:-1].split(",")
+    for line in splitfile:
+        seg = line[:-1].split(",")
         nid = chash(NODE_COL_HASH, seg[0])
         node_cursor_lists[nid & SHORT_HASH_MASK].append((nid, cursor))
         # Don't understand why use (NODE_FILE_HASH | cursor) instead of directly using cursor, changed to cursor
@@ -373,17 +374,17 @@ def merge_node_index(graph):
 def load_relationships(dataset, graph):
     print("Relationship Index Transforming...")
     relationship2indexarray(dataset, graph)
-    print(f"Index resorted to edge mergeing...")
+    print("Index resorted to edge mergeing...")
     merge_index_array_then_sort(graph)
-    print(f"Graph index merge by hashid...")
+    print("Graph index merge by hashid...")
     hid_idx_merge(graph)
     print("Merge success")
 
 
 def load_nodes(dataset, graph):
-    print(f"Node to hashid transforming...")
+    print("Node to hashid transforming...")
     node2indexarray(dataset, graph)
-    print(f"Node index mapping...")
+    print("Node index mapping...")
     merge_node_index(graph)
 
 

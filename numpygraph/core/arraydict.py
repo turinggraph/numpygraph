@@ -158,7 +158,8 @@ class ArrayDict():
         """ 插入存在链表的新增关系， 这部分要保证 cursor 不允许重复
         """
         heap = self.HEAP[cursor]
-        cursor_key, cursor_value, cursor_next = heap['key'], heap['value'], heap['next']
+        # cursor_key, _cursor_value, cursor_next
+        cursor_key, _, cursor_next = heap['key'], heap['value'], heap['next']
         first_access_idx = np.where(cursor_next == 0)[0]
         self_hosted_idx = np.where(cursor_key == key)[0]
         next_new_idx = np.where((cursor_key != key) & (cursor_next == self.WITHOUT_NEXT_MAGIC))[0]

@@ -20,6 +20,7 @@ import time
 
 base_string = string.digits + string.ascii_lowercase + string.ascii_uppercase
 
+
 def random_string(len):
     return "".join(np.random.choice(list(base_string), len))
 
