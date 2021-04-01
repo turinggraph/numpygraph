@@ -1,2 +1,15 @@
+
+# Ignore macOS finder file
+.DS_Store
+
+# Ignore PyCharm generated file
+.idea/
+
+# Ignore __pycache__
+__pycache__/
 .pytest_cache
-__pycache__
+doc/build
+build
+
+
+.vscode/

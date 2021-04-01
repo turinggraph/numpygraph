@@ -1,0 +1,32 @@
+
+name: docs
+on:
+  push:
+    branches: [ main, huangpu, hanryxu ]
+  pull_request:
+    branches: [ main, huangpu, hanryxu ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: make tmp directory for apidoc generator confliction
+      run: >-
+        echo "log fake" > /tmp/sphinx-log
+    - uses: ammaraskar/sphinx-action@master
+      with:
+        docs-folder: "docs/"
+        pre-build-command: "sphinx-apidoc -o docs/source ./numpygraph"
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        keep_files: true
+        deploy_key: ${{ secrets.DOCS_GP_ACTIONS_DEPLOY_KEY }}
+        external_repository: numpygraph/numpygraph.github.io
+        publish_branch: main  # default: gh-pages
+        publish_dir: docs/build/html
+        cname: numpygraph.org
+

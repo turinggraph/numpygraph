@@ -1,0 +1,10 @@
+sphinx-autobuild
+sphinx-rtd-theme
+sphinxcontrib-applehelp
+sphinxcontrib-devhelp
+sphinxcontrib-htmlhelp
+sphinxcontrib-jsmath
+sphinxcontrib-qthelp
+sphinxcontrib-serializinghtml
+asteroid_sphinx_theme
+rst2pdf
