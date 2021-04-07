@@ -24,7 +24,7 @@ def lines_sampler(relationship_files):
         relation, _ = os.path.abspath(relation), os.path.basename(relation)
         with open(relation) as f:
             line = f.readline()
-            from_col, to_col = re.findall("\((.+?)\)", line)
+            from_col, to_col = re.findall(r"\((.+?)\)", line)
         splitfiles = SplitFile.split(relation, num=200, jump=1)
         filesize = os.path.getsize(relation)
 
@@ -81,7 +81,7 @@ def node_hash_space_stat(key_sample_lines, nodes_line_num,
 def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_HASH):
     # output, (path, _from, _to), chunk = args
     with open(splitfile_arguments[0]) as f:
-        FROM_COL, TO_COL = re.findall("\((.+?)\)", f.readline())
+        FROM_COL, TO_COL = re.findall(r"\((.+?)\)", f.readline())
         FROM_COL_HASH, TO_COL_HASH = Context.node_type_hash(FROM_COL), Context.node_type_hash(TO_COL)
     # FROM_SHORT_HASH, TO_SHORT_HASH = NODES_SHORT_HASH[FROM_COL], NODES_SHORT_HASH[TO_COL]
     # 固定为64的原因主要还是考虑后续会映射到edge dict中, 统一使用64bin去切割
@@ -132,12 +132,13 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
             # ts单独设列
             # 属性单独设列
             # DSL 变相支持
-            continue 
+            continue
         try:
             h1, h2, ts = chash(FROM_COL_HASH, r[0]), chash(TO_COL_HASH, r[1]), int(r[2])
         except ValueError:
             continue
         # 记录高频节点, 自动双向
+        # 这里存储时每条边会存两次， 进入from_node_freq_lists/from_node_list 与to_node_freq_dict/to_node_lists
         if ffdict_able_flag and (h1 in from_node_freq_dict_set):
             from_node_freq_dict[h1].append((h2, ts))
         else:  # 记录非高频节点
@@ -286,7 +287,7 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
     os.makedirs(output, exist_ok=True)
     with open(splitfile_arguments[0]) as f:
         line = f.readline()
-        NODE_COL, = re.findall("\((.+?)\)", line)
+        NODE_COL, = re.findall(r"\((.+?)\)", line)
         # TODO: NODE_FILE_HASH = Context.node_file_hash(splitfile_arguments[0])
         NODE_COL_HASH = Context.node_type_hash(NODE_COL)
     # FROM_SHORT_HASH, TO_SHORT_HASH = NODES_SHORT_HASH[FROM_COL], NODES_SHORT_HASH[TO_COL]

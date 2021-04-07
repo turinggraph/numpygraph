@@ -19,7 +19,7 @@ class Context:
     def prepare_relations(relation_files):
         for fn in relation_files:
             with open(fn) as f:
-                FROM_COL, TO_COL = re.findall("\((.+?)\)", f.readline())
+                FROM_COL, TO_COL = re.findall(r"\((.+?)\)", f.readline())
                 Context.node_type_hash(FROM_COL)
                 Context.node_type_hash(TO_COL)
         with open(Context.node_type_path, "w") as f:
