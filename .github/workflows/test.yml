@@ -4,9 +4,9 @@
 name: test
 on:
   push:
-    branches: [ main, huangpu, hanryxu ]
+    branches: [ main, huangpu, hanryxu, hanryxu-re]
   pull_request:
-    branches: [ main, huangpu, hanryxu ]
+    branches: [ main, huangpu, hanryxu, hanryxu-re]
 
 jobs:
   build:
