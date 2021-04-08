@@ -74,7 +74,7 @@ def node_hash_space_stat(key_sample_lines, nodes_line_num,
         NODES_SHORT_HASH[node] = int(nodes_line_num[node] * (1 - freqrate)) // HID_BATCH_SIZE_AVERAGE
         # 建立节点高频word集合
         if len(freqitem) > 0:
-            freq_nodes[node] = set([chash(Context.node_type_hash(node), item[0]) for item in freqitem])
+            freq_nodes[node] = set([chash(Context.query_type_hash(node), item[0]) for item in freqitem])
     return freq_nodes, NODES_SHORT_HASH
 
 
@@ -82,7 +82,7 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
     # output, (path, _from, _to), chunk = args
     with open(splitfile_arguments[0]) as f:
         FROM_COL, TO_COL = re.findall(r"\((.+?)\)", f.readline())
-        FROM_COL_HASH, TO_COL_HASH = Context.node_type_hash(FROM_COL), Context.node_type_hash(TO_COL)
+        FROM_COL_HASH, TO_COL_HASH = Context.query_type_hash(FROM_COL), Context.query_type_hash(TO_COL)
     # FROM_SHORT_HASH, TO_SHORT_HASH = NODES_SHORT_HASH[FROM_COL], NODES_SHORT_HASH[TO_COL]
     # 固定为64的原因主要还是考虑后续会映射到edge dict中, 统一使用64bin去切割
     FROM_SHORT_HASH, TO_SHORT_HASH, SHORT_HASH_MASK = 64, 64, (1 << 6) - 1
@@ -93,6 +93,7 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
     # 随机块大小是为了让进程吃资源的节奏错开
     def random_chunk_size():
         return random.randint(300000, 600000)
+
     # 针对非高频节点使用使用短hash映射到共享空间，需要独立重排
     from_node_lists = [ArrayList("%s/hid_%d_%s.idxarr.chunk_%d" % (output, i, FROM_COL, chunk_id),
                                  chunk_size=random_chunk_size(),
@@ -283,13 +284,14 @@ def hid_idx_merge(graph):
 def node2idxarr(output, splitfile_arguments, chunk_id):
     def random_chunk_size():
         return random.randint(300000, 600000)
+
     output = f"{output}"
     os.makedirs(output, exist_ok=True)
     with open(splitfile_arguments[0]) as f:
         line = f.readline()
         NODE_COL, = re.findall(r"\((.+?)\)", line)
         # TODO: NODE_FILE_HASH = Context.node_file_hash(splitfile_arguments[0])
-        NODE_COL_HASH = Context.node_type_hash(NODE_COL)
+        NODE_COL_HASH = Context.query_type_hash(NODE_COL)
     # FROM_SHORT_HASH, TO_SHORT_HASH = NODES_SHORT_HASH[FROM_COL], NODES_SHORT_HASH[TO_COL]
     # 固定为64的原因主要还是考虑后续会映射到edge dict中, 统一使用64bin去切割
     NODE_SHORT_HASH, SHORT_HASH_MASK = 64, (1 << 6) - 1
@@ -407,6 +409,8 @@ def load(dataset, graph):
     Context.load_node_file_hash(f"{graph}/node_file_id.json")
     Context.prepare_relations(glob.glob(f"{dataset}/relation_*.csv"))
     Context.prepare_nodes(glob.glob(f"{dataset}/node_*.csv"))
+
+    Context.close()
 
     # Process relationships
     load_relationships(dataset, graph)

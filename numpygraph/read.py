@@ -12,7 +12,7 @@ class Read:
         self.dataset = dataset_loc
 
     def fetch_node_id(self, node_type, node_value):
-        node_type_hash = Context.node_type_hash(node_type)
+        node_type_hash = Context.query_type_hash(node_type)
         node_hash = chash(node_type_hash, node_value)
         return node_hash
 
@@ -24,15 +24,15 @@ class Read:
         node_id_asarray = np.asarray([node_id])
         cursors = adict[node_id_asarray]
         cursor = cursors[0][0]
-        for node_type in list(Context.NODE_TYPE.keys()):
-            with open(f"{self.dataset}/node_{node_type}.csv") as f:
-                try:
-                    f.seek(cursor)
-                    node_info = f.readline()
-                    if self.fetch_node_id(node_type, node_info.split(',')[0]) == node_id:
-                        return node_info.strip('\n')
-                except ValueError:
-                    pass
+        node_type = Context.parse_node_type(node_id)
+        with open(f"{self.dataset}/node_{node_type}.csv") as f:
+            try:
+                f.seek(cursor)
+                node_info = f.readline()
+                if self.fetch_node_id(node_type, node_info.split(',')[0]) == node_id:
+                    return node_info.strip('\n')
+            except ValueError:
+                pass
 
     def fetch_edge_attr(self, fid, tid):
         """
@@ -59,21 +59,6 @@ class Read:
         return edges
 
     def fetch_node_neibor_nodes(self, _id):
-        # fid = _id
-        # fs_id = _id & self.SHORT_HASH_MASK
-        # f_value_asarray = np.asarray([fs_id, fid])
-        # adict = ArrayDict(memmap_path=f"{self.graph}/edges_mapper/hid_{fs_id}.dict.arr",
-        #                   value_dtype=[('index', np.int64), ('length', np.int32)], memmap_mode='r')
-        # loc = adict[f_value_asarray]
-        # toarrconcat = np.memmap(f"{self.graph}/concat.to.arr",
-        #                         mode='r',
-        #                         order='F',
-        #                         dtype=[('index', np.int64), ('value', np.int64), ('ts', np.int32)])
-        # nodes = set()
-        # for (index, length) in loc:
-        #     for i in range(length):
-        #         nodes.add(toarrconcat[index + i][1])
-        # return nodes
         neighbor_edges = self.fetch_node_neibor_edges(_id)
         neighbor_nodes = []
         for edge in neighbor_edges:
@@ -96,7 +81,9 @@ class Read:
             edges.extend(toarrconcat[index:index + length])
         return edges
 
-    def sample_node_with_degree(self, _id, degrees=[4, 4, 4]):
+    def sample_node_with_degree(self, _id, degrees=None):
+        if degrees is None:
+            degrees = [4, 4, 4]
         nodes, edges = set(), set()
         extended_nodes = set()
         extended_edges = set()
