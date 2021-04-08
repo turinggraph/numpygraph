@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from pydoc import locate
 
 
 class Context:
@@ -9,6 +10,10 @@ class Context:
     HASH_NODE_TYPE = {}
     HASH_SHORT_NODE_TYPE = {}
     HASH_NODE_FILE = {}
+    node_attr_type = {}
+    node_attr_name = {}
+    edge_attr_type = {}
+    edge_attr_name = {}
     node_type_path = None
     node_file_path = None
     closed = False
@@ -25,9 +30,22 @@ class Context:
     def prepare_relations(relation_files):
         for fn in relation_files:
             with open(fn) as f:
-                FROM_COL, TO_COL = re.findall(r"\((.+?)\)", f.readline())
+                header_line = f.readline()
+                FROM_COL, TO_COL = re.findall(r"\((.+?)\)", header_line)
                 Context.node_type_hash(FROM_COL)
                 Context.node_type_hash(TO_COL)
+                edge_type = FROM_COL + TO_COL
+                attr_name = []
+                attr_type = []
+                for item in header_line.split(',')[2:]:
+                    item = item.strip()
+                    item_name = locate(item.split(':')[0])
+                    item_type = locate(item.split(':')[1])
+                    attr_name.append(item_name)
+                    attr_type.append(item_type)
+                Context.edge_attr_name[edge_type] = attr_name
+                Context.edge_attr_type[edge_type] = attr_type
+
         with open(Context.node_type_path, "w") as f:
             f.write(json.dumps(Context.NODE_TYPE))
 
@@ -38,6 +56,7 @@ class Context:
         if col in Context.NODE_TYPE:
             return Context.NODE_TYPE[col]
         else:
+            # TODO: current query did not make use of the "60" here and the "60" in the chash function of hash
             Context.NODE_TYPE[col] = len(Context.NODE_TYPE) << 60
             return Context.NODE_TYPE[col]
 
@@ -51,6 +70,19 @@ class Context:
             return Context.NODE_FILE[filename]
         else:
             Context.NODE_FILE[filename] = len(Context.NODE_FILE) << (64 - 19)
+            with open(filename) as f:
+                header_line = f.readline()
+                node_type = re.findall(r"\((.+?)\)", header_line)[0]
+                attr_name = []
+                attr_type = []
+                for item in header_line.split(',')[1:]:
+                    item = item.strip()
+                    item_name = locate(item.split(':')[0])
+                    item_type = locate(item.split(':')[1])
+                    attr_name.append(item_name)
+                    attr_type.append(item_type)
+                Context.node_attr_name[node_type] = attr_name
+                Context.node_attr_type[node_type] = attr_type
             return Context.NODE_FILE[filename]
 
     @staticmethod
@@ -104,6 +136,14 @@ class Context:
     @staticmethod
     def query_file_hash(value):
         return Context.NODE_FILE[value]
+
+    @staticmethod
+    def query_edge_attr(value):
+        return Context.edge_attr_type[value]
+
+    @staticmethod
+    def query_node_attr(value):
+        return Context.node_attr_type[value]
 
     @staticmethod
     def parse_node_type(node_id):

@@ -412,6 +412,11 @@ def load(dataset, graph):
 
     Context.close()
 
+    print("Node attr name:\n", Context.node_attr_name)
+    print("Node attr type:\n", Context.node_attr_type)
+    print("Edge attr name:\n", Context.edge_attr_name)
+    print("Edge attr type:\n", Context.edge_attr_type)
+
     # Process relationships
     load_relationships(dataset, graph)
 

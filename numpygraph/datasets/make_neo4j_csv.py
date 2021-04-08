@@ -60,16 +60,17 @@ def graph_generator(graph_path, node_type_cnt, node_cnt, edge_cnt):
 
     for i in range(node_type_cnt):
         pd.DataFrame(nodes[i]).to_csv(f"{graph_path}/node_{node_types[i]}.csv", index=False,
-                                      header=[f"{node_types[i]}({node_types[i]})", "INT", "FLOAT", "BOOL", "STRING"],
+                                      header=[f"{node_types[i]}({node_types[i]})", "attr1:int", "attr2:float",
+                                              "attr3:bool", "attr4:str"],
                                       mode="w+")
         for j in range(i):
             pd.DataFrame(edges[i][j]).to_csv(f"{graph_path}/relation_{node_types[i]}_{node_types[j]}.csv", index=False,
                                              header=[f"{node_types[i]}({node_types[i]})",
                                                      f"{node_types[j]}({node_types[j]})",
-                                                     "attr1:Time",
-                                                     "attr2:Float",
-                                                     "attr3:Boolean",
-                                                     "attr4:String"
+                                                     "attr1:int",
+                                                     "attr2:float",
+                                                     "attr3:bool",
+                                                     "attr4:str"
                                                      ], mode="w+")
 
 
