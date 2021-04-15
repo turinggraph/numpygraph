@@ -4,6 +4,7 @@ import os
 from numpygraph.load import load
 from numpygraph.read import Read
 from numpygraph.datasets.make_neo4j_csv import graph_generator
+from numpygraph.context import Context
 
 dataset_path, graph_path, node_type_cnt, node_cnt, edge_cnt = "_dataset_test_directory", "graph", 5, 1000, 10000
 
@@ -22,6 +23,8 @@ def dump():
 
 
 def sample():
+    print(Context.node_attr_name, Context.node_attr_type)
+    print(Context.NODE_TYPE)
     # READ: graph
     read = Read(dataset_path, graph_path)
     # Sample node, id

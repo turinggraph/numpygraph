@@ -20,7 +20,7 @@ class Read:
         node_id = _id
         node_short_id = node_id & self.SHORT_HASH_MASK
         adict = ArrayDict(memmap_path=f"{self.graph}/nodes_mapper/hid_{node_short_id}.dict.arr",
-                          value_dtype=[('cursor', np.int64)], memmap_mode='r')
+                          value_dtype=[('cursor', np.int64), ('line_num', np.int64)], memmap_mode='r')
         node_id_asarray = np.asarray([node_id])
         cursors = adict[node_id_asarray]
         cursor = cursors[0][0]

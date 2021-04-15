@@ -1,22 +1,39 @@
 import json
 import os
 import re
-from pydoc import locate
+import numpy as np
+from itertools import compress
+import pickle
+# from pydoc import locate
+
+from numpygraph.core.parse import Parse
 
 
 class Context:
+    dataset = ""
+    graph = ""
     NODE_TYPE = {}
     NODE_FILE = {}
     HASH_NODE_TYPE = {}
     HASH_SHORT_NODE_TYPE = {}
     HASH_NODE_FILE = {}
     node_attr_type = {}
+    node_attr_type_without_str = {}
     node_attr_name = {}
+    node_attr_name_without_str = {}
+    valid_attrs = {}
     edge_attr_type = {}
     edge_attr_name = {}
     node_type_path = None
     node_file_path = None
     closed = False
+    node_attr_chunk_num = {}
+    node_csv_chunk_num = {}
+
+    @staticmethod
+    def load_loc(dataset_path, graph_path):
+        Context.dataset = dataset_path
+        Context.graph = graph_path
 
     @staticmethod
     def prepare_nodes(node_files):
@@ -39,8 +56,8 @@ class Context:
                 attr_type = []
                 for item in header_line.split(',')[2:]:
                     item = item.strip()
-                    item_name = locate(item.split(':')[0])
-                    item_type = locate(item.split(':')[1])
+                    item_name = item.split(':')[0]
+                    item_type = Parse.get_type(item.split(':')[1])
                     attr_name.append(item_name)
                     attr_type.append(item_type)
                 Context.edge_attr_name[edge_type] = attr_name
@@ -77,12 +94,17 @@ class Context:
                 attr_type = []
                 for item in header_line.split(',')[1:]:
                     item = item.strip()
-                    item_name = locate(item.split(':')[0])
-                    item_type = locate(item.split(':')[1])
+                    item_name = item.split(':')[0]
+                    item_type = Parse.get_type(item.split(':')[1])
                     attr_name.append(item_name)
                     attr_type.append(item_type)
+                Context.valid_attrs[node_type] = list(map(lambda a: False if a is np.str else True, attr_type))
                 Context.node_attr_name[node_type] = attr_name
                 Context.node_attr_type[node_type] = attr_type
+                Context.node_attr_type_without_str[node_type] = list(
+                    compress(attr_type, Context.valid_attrs[node_type]))
+                Context.node_attr_name_without_str[node_type] = list(
+                    compress(attr_name, Context.valid_attrs[node_type]))
             return Context.NODE_FILE[filename]
 
     @staticmethod
@@ -144,6 +166,22 @@ class Context:
     @staticmethod
     def query_node_attr(value):
         return Context.node_attr_type[value]
+
+    @staticmethod
+    def query_node_attr_type_without_str(value):
+        return Context.node_attr_type_without_str[value]
+
+    @staticmethod
+    def query_node_attr_name(value):
+        return Context.node_attr_name[value]
+
+    @staticmethod
+    def query_node_attr_name_without_str(value):
+        return Context.node_attr_name_without_str[value]
+
+    @staticmethod
+    def query_valid_attrs(value):
+        return Context.valid_attrs[value]
 
     @staticmethod
     def parse_node_type(node_id):

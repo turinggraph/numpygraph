@@ -7,6 +7,7 @@ from collections import defaultdict, Counter
 import multiprocessing
 from multiprocessing import Pool, cpu_count
 import random
+from itertools import compress
 
 from numpygraph.lib.splitfile import SplitFile
 from numpygraph.core.arraylist import ArrayList
@@ -14,6 +15,7 @@ from numpygraph.core.arraydict import ArrayDict
 from numpygraph.core.hash import chash
 from numpygraph.context import Context
 from numpygraph.mergeindex import MergeIndex
+from numpygraph.core.parse import Parse
 
 
 def lines_sampler(relationship_files):
@@ -257,6 +259,11 @@ def hid_idx_dict(graph, _id):
                       memmap_mode='w+')
 
     for _, ia in enumerate(idxarr):
+        # Note here how we put multiple values into ArrayDict
+        # It's adict[index column] = adict[value columns]
+        # It's not np.asarray[[ia['index'],ia['length']] since while accessing separately and combining gives
+        # [[First row],[Second row]] while accessing with combined indices gives a list of
+        # tuples: [(item1 in first row, item1 in second row),...], which is what we want
         adict[ia['value']] = ia[['index', 'length']]
     # freq部分实际上是被重复写入到全部 hash short_dict中了
     hid_freq_path = f"{graph}/edges_sort/hid_freq.idx.arr"
@@ -298,7 +305,7 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
     splitfile = SplitFile(*splitfile_arguments)
     node_cursor_lists = [ArrayList("%s/hid_%d_%s.curarr.chunk_%d" % (output, i, NODE_COL, chunk_id),
                                    chunk_size=random_chunk_size(),
-                                   dtype=[('nid', np.int64), ('cursor', np.int64)])
+                                   dtype=[('nid', np.int64), ('cursor', np.int64), ('line_num', np.int64)])
                          for i in range(NODE_SHORT_HASH)]
     _ = next(splitfile)
     cursor = splitfile.tell()
@@ -308,7 +315,7 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
     for line in splitfile:
         seg = line[:-1].split(",")
         nid = chash(NODE_COL_HASH, seg[0])
-        node_cursor_lists[nid & SHORT_HASH_MASK].append((nid, cursor))
+        node_cursor_lists[nid & SHORT_HASH_MASK].append((nid, cursor, 0))
         # Don't understand why use (NODE_FILE_HASH | cursor) instead of directly using cursor, changed to cursor
         cursor = splitfile.tell()
         # cursor += len(l)
@@ -347,6 +354,7 @@ def merge_node_cursor_dict(graph, _id):
                         dtype=[
                             ('idx', np.int64),
                             ('cursor', np.int64),
+                            ('line_num', np.int64)
                         ])
               for f in glob.glob(f"{graph}/node_*.csv.curarr/hid_%d_*.curarr.chunk*" % _id)]
     nodes_cursor_sum = sum([i.shape[0] for i in idxarr])
@@ -355,12 +363,12 @@ def merge_node_cursor_dict(graph, _id):
                       memmap=True,
                       item_size=nodes_cursor_sum,
                       hash_heap_rate=0.5,
-                      value_dtype=[('cursor', np.int64)],
+                      value_dtype=[('cursor', np.int64), ('line_num', np.int64)],
                       memmap_mode='w+')
 
     for _, ia in enumerate(idxarr):
         # using _id (as we previously did) would cause the _id in the local scope to change, not so safe
-        adict[ia['idx']] = ia['cursor']
+        adict[ia['idx']] = ia[['cursor', 'line_num']]
 
 
 def merge_node_index(graph):
@@ -372,6 +380,86 @@ def merge_node_index(graph):
 
 
 # merge_node_index
+# ===================================Dividing line====================================================
+# load attributes
+
+def load_split_node_attr(output, splitfile_arguments, chunk_id):
+    def random_chunk_size():
+        return random.randint(300000, 600000)
+
+    output = f"{output}"
+    os.makedirs(output, exist_ok=True)
+    with open(splitfile_arguments[0]) as f:
+        line = f.readline()
+        NODE_COL, = re.findall(r"\((.+?)\)", line)
+        # TODO: NODE_FILE_HASH = Context.node_file_hash(splitfile_arguments[0])
+        NODE_COL_HASH = Context.query_type_hash(NODE_COL)
+    # FROM_SHORT_HASH, TO_SHORT_HASH = NODES_SHORT_HASH[FROM_COL], NODES_SHORT_HASH[TO_COL]
+    # 固定为64的原因主要还是考虑后续会映射到edge dict中, 统一使用64bin去切割
+    NODE_SHORT_HASH, SHORT_HASH_MASK = 64, (1 << 6) - 1
+    splitfile = SplitFile(*splitfile_arguments)
+    data_type = [('nid', np.int64), ('cursor', np.int64)]
+    data_type.extend(
+        list(zip(Context.query_node_attr_name_without_str(NODE_COL),
+                 Context.query_node_attr_type_without_str(NODE_COL))))
+
+    # print("data_type:", data_type)
+    # print("node_attr_type_without_str:", node_attr_type_without_str)
+    # print(data_type)
+    node_cursor_lists = [ArrayList("%s/hid_%d_%s.curarr.chunk_%d" % (output, i, NODE_COL, chunk_id),
+                                   chunk_size=random_chunk_size(),
+                                   dtype=data_type)
+                         for i in range(NODE_SHORT_HASH)]
+    _ = next(splitfile)
+    cursor = splitfile.tell()
+    # cursor = len(_l)
+    # using the cursor in splitfile through the function tell is a much safer way to index the line info
+
+    for line in splitfile:
+        # avoid for
+        # throw string column away
+        seg = line[:-1].split(",")
+        nid = chash(NODE_COL_HASH, seg[0])
+        seg = list(compress(seg[1:], Context.query_valid_attrs(NODE_COL)))
+        attrs = [nid, cursor]
+        attrs.extend(list(map(Parse.get_value, Context.query_node_attr_type_without_str(NODE_COL)[:], seg[:])))
+        attrs = tuple(attrs)
+        # print(attrs)
+        node_cursor_lists[nid & SHORT_HASH_MASK].append(attrs)
+        cursor = splitfile.tell()
+
+    for arraylist in node_cursor_lists:
+        arraylist.close(merge=True)
+    return (NODE_COL, chunk_id, len(node_cursor_lists))
+
+
+def load_node_attr(dataset, graph, CHUNK_COUNT=cpu_count()):
+    pool = Pool(processes=CHUNK_COUNT)
+    for node_type in Context.NODE_TYPE:
+        Context.node_attr_chunk_num[node_type] = {}
+    for nodefile in glob.glob(f"{dataset}/node_*.csv"):
+        nodefile, basename = os.path.abspath(nodefile), os.path.basename(nodefile)
+        start_time = time.time()
+        print("## Loading node attributes to ArrayList files... ##", nodefile)
+        chunk_info = pool.starmap(load_split_node_attr,
+                                  [(f"{graph}/node_attr/{basename}.curarr",
+                                    splitfile_arguments,
+                                    chunk_id)
+                                   for chunk_id, splitfile_arguments in
+                                   enumerate(SplitFile.split(nodefile, num=CHUNK_COUNT, jump=1))]
+                                  )
+        for (node_type, chunk_id, chunk_num) in chunk_info:
+            print(node_type, chunk_id, chunk_num)
+            Context.node_attr_chunk_num[node_type][chunk_id] = chunk_num
+        print("Time usage:", time.time() - start_time)
+    print("node_attr_chunk_num:", Context.node_attr_chunk_num)
+
+
+def load_edge_attributes():
+    pass
+
+
+# load attributes
 # ===================================Dividing line====================================================
 # load
 def load_relationships(dataset, graph):
@@ -385,6 +473,8 @@ def load_relationships(dataset, graph):
 
 
 def load_nodes(dataset, graph):
+    print("Node attributes to index array")
+    load_node_attr(dataset, graph)
     print("Node to hashid transforming...")
     node2indexarray(dataset, graph)
     print("Node index mapping...")
@@ -404,6 +494,7 @@ def load(dataset, graph):
     stime = time.time()
     print("T1:", stime)
 
+    Context.load_loc(dataset, graph)
     # Prepare relations
     Context.load_node_type_hash(f"{graph}/node_type_id.json")
     Context.load_node_file_hash(f"{graph}/node_file_id.json")
@@ -424,5 +515,6 @@ def load(dataset, graph):
     load_nodes(dataset, graph)
 
     etime = time.time()
+    print("Load complete")
     print("T2:", etime)
     print("DT:", etime - stime)
