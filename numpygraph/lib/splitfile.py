@@ -16,8 +16,9 @@ class SplitFile():
         for _ in range(jump):
             f.readline()
         size = os.path.getsize(path)
-        if size < single_threshold:
-            num = 1
+        # 强制让文件分片多一点，否则把节点太少时节点属性csv转成arraylist的时候就一块儿可能掩盖一些bug
+        # if size < single_threshold:
+        #     num = 1
         _froms = [int((i / num) * size) for i in range(num)]
         _tos = [f.seek(_f) and f.readline() and f.tell() for _f in _froms[1:]] + [None]
         return [(path, _f, _t) for _f, _t in zip(_froms, _tos)]

@@ -4,9 +4,10 @@
 name: test
 on:
   push:
-    branches: [ main, huangpu, hanryxu ]
+    branches: [ main, huangpu, hanryxu, hanryxu-re, node-loading]
   pull_request:
-    branches: [ main, huangpu, hanryxu ]
+    branches: [ main, huangpu, hanryxu, hanryxu-re, node-loading]
+  workflow_dispatch:
 
 jobs:
   build:
