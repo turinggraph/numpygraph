@@ -29,4 +29,8 @@ pypi-build:
 
 upload-all: pypi-upload doc-upload
 
+profile: 
+	python3 -m numpygraph.test.dataset_load_test 
+	snakeviz -s result.out -H 0.0.0.0
+
 

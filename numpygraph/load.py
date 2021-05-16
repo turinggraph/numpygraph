@@ -45,7 +45,9 @@ def lines_sampler(relationship_files):
                 continue
             key_sample_lines[from_col].append(keys[0])
             key_sample_lines[to_col].append(keys[1])
-        line_len_mean = np.mean(list(map(lambda l: len(l.encode("utf-8")), lines)))
+        line_len_mean = np.mean(
+            list(map(lambda l: len(l.encode("utf-8")), lines))
+        )
         line_num = int(filesize / line_len_mean)
         nodes_line_num[from_col] += line_num
         nodes_line_num[to_col] += line_num
@@ -70,7 +72,9 @@ def node_hash_space_stat(
     for node, words in key_sample_lines.items():
         node_freq_word_cnt = Counter(words).most_common(FREQ_WORDS_TOP_KEEP)
         csum = len(words)
-        topstat = [(node, fcnt, fcnt / csum) for node, fcnt in node_freq_word_cnt]
+        topstat = [
+            (node, fcnt, fcnt / csum) for node, fcnt in node_freq_word_cnt
+        ]
         freqitem = list(filter(lambda x: x[2] > FREQ_WORDS_TOP_RATIO, topstat))
         freqrate = sum([e[-1] for e in freqitem])
         # HASH空间切分数 = 非高频节点的记录数 / 期望的hash batch大小
@@ -80,12 +84,17 @@ def node_hash_space_stat(
         # 建立节点高频word集合
         if len(freqitem) > 0:
             freq_nodes[node] = set(
-                [chash(Context.query_type_hash(node), item[0]) for item in freqitem]
+                [
+                    chash(Context.query_type_hash(node), item[0])
+                    for item in freqitem
+                ]
             )
     return freq_nodes, NODES_SHORT_HASH
 
 
-def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_HASH):
+def lines2idxarr(
+    output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_HASH
+):
     # output, (path, _from, _to), chunk = args
     with open(splitfile_arguments[0]) as f:
         FROM_COL, TO_COL = re.findall(r"\((.+?)\)", f.readline())
@@ -162,7 +171,11 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
             # DSL 变相支持
             continue
         try:
-            h1, h2, ts = chash(FROM_COL_HASH, r[0]), chash(TO_COL_HASH, r[1]), int(r[2])
+            h1, h2, ts = (
+                chash(FROM_COL_HASH, r[0]),
+                chash(TO_COL_HASH, r[1]),
+                int(r[2]),
+            )
         except ValueError:
             continue
         # 记录高频节点, 自动双向
@@ -197,27 +210,30 @@ def relationship2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
     freq_nodes, NODES_SHORT_HASH = node_hash_space_stat(
         key_sample_lines, nodes_line_num
     )
-    pool = Pool(processes=CHUNK_COUNT)
-    for relation in glob.glob(f"{dataset}/relation_*.csv"):
-        relation, basename = os.path.abspath(relation), os.path.basename(relation)
-        start_time = time.time()
-        print("## Relationship to index array transforming... ##", relation)
-        pool.starmap(
-            lines2idxarr,
-            [
-                (
-                    f"{graph}/{basename}.idxarr",
-                    splitfile_arguments,
-                    chunk_id,
-                    freq_nodes,
-                    NODES_SHORT_HASH,
-                )
-                for chunk_id, splitfile_arguments in enumerate(
-                    SplitFile.split(relation, num=CHUNK_COUNT, jump=1)
-                )
-            ],
-        )
-        print("Time usage:", time.time() - start_time)
+    with Pool(processes=CHUNK_COUNT) as pool:
+    
+        for relation in glob.glob(f"{dataset}/relation_*.csv"):
+            relation, basename = os.path.abspath(relation), os.path.basename(
+                relation
+            )
+            start_time = time.time()
+            print("## Relationship to index array transforming... ##", relation)
+            pool.starmap(
+                lines2idxarr,
+                [
+                    (
+                        f"{graph}/{basename}.idxarr",
+                        splitfile_arguments,
+                        chunk_id,
+                        freq_nodes,
+                        NODES_SHORT_HASH,
+                    )
+                    for chunk_id, splitfile_arguments in enumerate(
+                        SplitFile.split(relation, num=CHUNK_COUNT, jump=1)
+                    )
+                ],
+            )
+            print("Time usage:", time.time() - start_time)
 
 
 # relationship2indexarray and its helper functions
@@ -251,7 +267,9 @@ def merge_index_array_then_sort(graph):
     )
     edges_count_sum += sum(
         [
-            np.memmap(f, mode="r", dtype=[("to", np.int64), ("ts", np.int32)]).shape[0]
+            np.memmap(
+                f, mode="r", dtype=[("to", np.int64), ("ts", np.int32)]
+            ).shape[0]
             for f in sum(list(files_freq_dict.values()), [])
         ]
     )
@@ -267,24 +285,24 @@ def merge_index_array_then_sort(graph):
         dtype=[("index", np.int64), ("value", np.int64), ("ts", np.int32)],
     )
 
-    pool = Pool(processes=cpu_count())
-    stime = time.time()
-    for items in list(files_hash_dict.items()):
-        pool.apply_async(
-            MergeIndex.merge_idx_to,
-            args=items,
-            callback=MergeIndex.merge_idx_to_callback,
-        )
-    for items in list(files_freq_dict.items()):
-        pool.apply_async(
-            MergeIndex.merge_freq_idx_to,
-            args=items,
-            callback=MergeIndex.merge_freq_idx_to_callback,
-        )
-    pool.close()
-    pool.join()
-    MergeIndex.freq_idx_pointer_dump(graph)
-    print(time.time() - stime)
+    with Pool(processes=cpu_count()) as pool:
+        stime = time.time()
+        for items in list(files_hash_dict.items()):
+            pool.apply_async(
+                MergeIndex.merge_idx_to,
+                args=items,
+                callback=MergeIndex.merge_idx_to_callback,
+            )
+        for items in list(files_freq_dict.items()):
+            pool.apply_async(
+                MergeIndex.merge_freq_idx_to,
+                args=items,
+                callback=MergeIndex.merge_freq_idx_to_callback,
+            )
+        pool.close()
+        pool.join()
+        MergeIndex.freq_idx_pointer_dump(graph)
+        print(time.time() - stime)
 
 
 # merge_index_array_then_sort and its helper functions
@@ -301,7 +319,11 @@ def hid_idx_dict(graph, _id):
         np.memmap(
             f,
             mode="r",
-            dtype=[("value", np.int64), ("index", np.int64), ("length", np.int32)],
+            dtype=[
+                ("value", np.int64),
+                ("index", np.int64),
+                ("length", np.int32),
+            ],
         )
         for f in glob.glob(f"{graph}/edges_sort/hid_%d_*.idx.arr" % _id)
     ]
@@ -330,17 +352,21 @@ def hid_idx_dict(graph, _id):
         freqarr = np.memmap(
             hid_freq_path,
             mode="r",
-            dtype=[("value", np.int64), ("index", np.int64), ("length", np.int32)],
+            dtype=[
+                ("value", np.int64),
+                ("index", np.int64),
+                ("length", np.int32),
+            ],
         )
         adict[freqarr["value"]] = freqarr[["index", "length"]]
 
 
 def hid_idx_merge(graph):
-    p = Pool(processes=cpu_count())
-    stime = time.time()
-    # TODO: BUG: 当样本过小时, hid连64个可能都凑不齐
-    _ = p.starmap(hid_idx_dict, [(graph, i) for i in range(64)])
-    print(time.time() - stime)
+    with Pool(processes=cpu_count()) as p:
+        stime = time.time()
+        # TODO: BUG: 当样本过小时, hid连64个可能都凑不齐
+        _ = p.starmap(hid_idx_dict, [(graph, i) for i in range(64)])
+        print(time.time() - stime)
 
 
 # hid_idx_merge
@@ -411,27 +437,33 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
 
 
 def node2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
-    pool = Pool(processes=CHUNK_COUNT)
-    for nodefile in glob.glob(f"{dataset}/node_*.csv"):
-        nodefile, basename = os.path.abspath(nodefile), os.path.basename(nodefile)
-        print("nodefile", nodefile, "basename", basename)
-        node_type = basename.split("_")[1].split(".")[0]
-        start_time = time.time()
-        print("## Node slicing and to index array transforming... ##", nodefile)
-        re_value = pool.starmap(
-            node2idxarr,
-            [
-                (f"{graph}/{basename}.curarr", splitfile_arguments, chunk_id)
-                for chunk_id, splitfile_arguments in enumerate(
-                    SplitFile.split(nodefile, num=CHUNK_COUNT, jump=1)
-                )
-            ],
-        )
-        Context.node_attr_chunk_num[node_type] = dict(re_value)
-        print(re_value)
-        print("Time usage:", time.time() - start_time)
+    with Pool(processes=CHUNK_COUNT) as pool:       
+        for nodefile in glob.glob(f"{dataset}/node_*.csv"):
+            nodefile, basename = os.path.abspath(nodefile), os.path.basename(
+                nodefile
+            )
+            print("nodefile", nodefile, "basename", basename)
+            node_type = basename.split("_")[1].split(".")[0]
+            start_time = time.time()
+            print("## Node slicing and to index array transforming... ##", nodefile)
+            re_value = pool.starmap(
+                node2idxarr,
+                [
+                    (
+                        f"{graph}/{basename}.curarr",
+                        splitfile_arguments,
+                        chunk_id,
+                    )
+                    for chunk_id, splitfile_arguments in enumerate(
+                        SplitFile.split(nodefile, num=CHUNK_COUNT, jump=1)
+                    )
+                ],
+            )
+            Context.node_attr_chunk_num[node_type] = dict(re_value)
+            print(re_value)
+            print("Time usage:", time.time() - start_time)
 
-    print("Context.node_attr_chunk_num:", Context.node_attr_chunk_num)
+        print("Context.node_attr_chunk_num:", Context.node_attr_chunk_num)
 
 
 # node2indexarray
@@ -481,14 +513,14 @@ def merge_node_cursor_dict(graph, node_type):
 
 def merge_node_index(graph):
     print("### Merging node cursor to dict...")
-    p = Pool(processes=cpu_count())
-    stime = time.time()
-    p.starmap(
-        merge_node_cursor_dict,
-        [(graph, node_type) for node_type in Context.NODE_TYPE.keys()],
-    )
-    print(time.time() - stime)
-    print("### Merge node cursor to dict complete")
+    with Pool(processes=cpu_count()) as p:
+        stime = time.time()
+        p.starmap(
+            merge_node_cursor_dict,
+            [(graph, node_type) for node_type in Context.NODE_TYPE.keys()],
+        )
+        print(time.time() - stime)
+        print("### Merge node cursor to dict complete")
     pass
 
 

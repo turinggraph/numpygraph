@@ -7,12 +7,13 @@ from numpygraph.datasets.make_neo4j_csv import graph_generator
 from numpygraph.context import Context
 import cProfile
 
+
 dataset_path, graph_path, node_type_cnt, node_cnt, edge_cnt = (
     "_dataset_test_directory",
     "graph",
     5,
-    10000,
-    10000000,
+    1000,
+    100000,
 )
 
 
@@ -100,8 +101,9 @@ def test_pipeline(debug=False):
         sample()
         clean()
     else:
+        # clean([dataset_path, graph_path])
         clean([graph_path])
-        mock()
+        # mock()
         dump()
         sample()
 
