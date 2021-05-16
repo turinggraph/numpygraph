@@ -4,6 +4,7 @@ import re
 import numpy as np
 from itertools import compress
 import pickle
+
 # from pydoc import locate
 
 from numpygraph.core.parse import Parse
@@ -54,10 +55,10 @@ class Context:
                 edge_type = FROM_COL + TO_COL
                 attr_name = []
                 attr_type = []
-                for item in header_line.split(',')[2:]:
+                for item in header_line.split(",")[2:]:
                     item = item.strip()
-                    item_name = item.split(':')[0]
-                    item_type = Parse.get_type(item.split(':')[1])
+                    item_name = item.split(":")[0]
+                    item_type = Parse.get_type(item.split(":")[1])
                     attr_name.append(item_name)
                     attr_type.append(item_type)
                 Context.edge_attr_name[edge_type] = attr_name
@@ -92,19 +93,23 @@ class Context:
                 node_type = re.findall(r"\((.+?)\)", header_line)[0]
                 attr_name = []
                 attr_type = []
-                for item in header_line.split(',')[1:]:
+                for item in header_line.split(",")[1:]:
                     item = item.strip()
-                    item_name = item.split(':')[0]
-                    item_type = Parse.get_type(item.split(':')[1])
+                    item_name = item.split(":")[0]
+                    item_type = Parse.get_type(item.split(":")[1])
                     attr_name.append(item_name)
                     attr_type.append(item_type)
-                Context.valid_attrs[node_type] = list(map(lambda a: False if a is np.str else True, attr_type))
+                Context.valid_attrs[node_type] = list(
+                    map(lambda a: False if a is np.str else True, attr_type)
+                )
                 Context.node_attr_name[node_type] = attr_name
                 Context.node_attr_type[node_type] = attr_type
                 Context.node_attr_type_without_str[node_type] = list(
-                    compress(attr_type, Context.valid_attrs[node_type]))
+                    compress(attr_type, Context.valid_attrs[node_type])
+                )
                 Context.node_attr_name_without_str[node_type] = list(
-                    compress(attr_name, Context.valid_attrs[node_type]))
+                    compress(attr_name, Context.valid_attrs[node_type])
+                )
             return Context.NODE_FILE[filename]
 
     @staticmethod

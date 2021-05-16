@@ -11,5 +11,8 @@ __pycache__/
 doc/build
 build
 
-
+*.out
+.cache/
 .vscode/
+_dataset_test_directory/
+graph/

@@ -12,8 +12,10 @@ import os
 from pathlib import Path
 
 CONFIG_PATH = str(Path.home()) + "/.npg"
-SQLKeywords = ['select', 'from', 'insert', 'update', 'delete', 'drop']
+SQLKeywords = ["select", "from", "insert", "update", "delete", "drop"]
 os.makedirs(CONFIG_PATH, exist_ok=True)
+
+
 class SQLCompleter(Completer):
     def get_completions(self, document, complete_event):
         word_before_cursor = document.get_word_before_cursor(WORD=True)
@@ -21,11 +23,13 @@ class SQLCompleter(Completer):
         for m in matches:
             yield Completion(m, start_position=-len(word_before_cursor))
 
-class CommandClient():
+
+class CommandClient:
     def main(self):
         a = 3
         print("AA")
-    
+
+
 # try:
 #     while True:
 #         user_input = prompt(u'npg> ',
@@ -43,10 +47,7 @@ class CommandClient():
 # #         click.echo_via_pager(user_input)
 # except (KeyboardInterrupt, EOFError) as e:
 #     print("FORCE EXIT<<")
-        
-        
-    
 
-        
-# def cmd():     
+
+# def cmd():
 #     fire.Fire(CommandClient)

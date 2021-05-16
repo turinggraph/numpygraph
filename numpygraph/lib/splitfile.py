@@ -1,9 +1,8 @@
 import os
 
 
-class SplitFile():
-    '''分片文件
-    '''
+class SplitFile:
+    """分片文件"""
 
     @staticmethod
     def split(path, num, jump=0, dist_random=False, single_threshold=int(1024 ** 2)):
@@ -36,9 +35,9 @@ class SplitFile():
 
     def __next__(self):
         l = self.f.readline()
-        if l == '' or ((self._to is not None) and self.cursor > self._to):
+        if l == "" or ((self._to is not None) and self.cursor > self._to):
             raise StopIteration
-        self.cursor += len(l.encode('utf-8'))
+        self.cursor += len(l.encode("utf-8"))
         return l
 
     def tell(self):

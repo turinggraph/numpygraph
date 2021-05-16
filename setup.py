@@ -1,11 +1,12 @@
 import setuptools
 import glob
 from numpygraph import __version__
+
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="numpygraph", # Replace with your own username
+    name="numpygraph",  # Replace with your own username
     version=__version__,
     author="hp027",
     author_email="hp027@foxmail.com",
@@ -19,11 +20,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    entry_points={
-      'console_scripts': [
-          'npg = numpygraph:cmd'
-      ]
-    },
-    python_requires='>=3.6',
+    entry_points={"console_scripts": ["npg = numpygraph:cmd"]},
+    python_requires=">=3.6",
     install_requires=open("./requirements.txt", "r").read().strip().split("\n"),
 )

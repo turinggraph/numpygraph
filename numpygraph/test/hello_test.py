@@ -6,7 +6,7 @@
 #     request.addfinalizer(teardown_function)  # 此内嵌函数做teardown工作
 #     print('setup_function called.')
 
-# @pytest.fixture(scope='module') 
+# @pytest.fixture(scope='module')
 # def setup_module(request):
 #     def teardown_module():
 #         print("teardown_module called.")
@@ -19,9 +19,9 @@
 
 
 def test_2():
-    print('Test_2 called.')
+    print("Test_2 called.")
 
 
 def test_4():
-    print('Test_4 called.')
+    print("Test_4 called.")
     assert 2 == 1 + 1

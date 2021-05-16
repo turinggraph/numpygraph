@@ -1,0 +1,3 @@
+[submodule "numpygraph/parser"]
+	path = numpygraph/parser
+	url = git@github.com:turinggraph/numpygraph-parser.git

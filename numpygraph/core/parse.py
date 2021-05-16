@@ -3,12 +3,12 @@ import numpy as np
 
 class Parse:
     data_type = {
-        'int': np.int,
-        'int64': np.int64,
-        'int32': np.int32,
-        'float': np.float,
-        'bool': np.bool,
-        'str': np.str
+        "int": np.int,
+        "int64": np.int64,
+        "int32": np.int32,
+        "float": np.float,
+        "bool": np.bool,
+        "str": np.str,
     }
 
     @staticmethod
