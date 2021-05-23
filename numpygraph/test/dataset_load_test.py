@@ -9,11 +9,21 @@ import cProfile
 
 
 dataset_path, graph_path, node_type_cnt, node_cnt, edge_cnt = (
-    "_dataset_test_directory",
-    "graph",
-    5,
-    1000,
+    # "/data/tmp/_dataset_test_directory_10G",
+    # "/data/tmp/graph_10G",
+    # "/opt/shm/_dataset_test_directory_20G",
+    # "/nvme500g/_dataset_test_directory_20G",
+    "/nvme500g/_dataset_test_directory_2G",
+    # "/opt/shm/_dataset_test_directory_20G",
+    # "/dev/shm/graph_10G",
+    # "/opt/shm/_dataset_test_directory_10G",
+    # "/opt/shm/graph_10G",
+    # "/dev/shm/graph_20G",
+    # "/nvme500g/graph_20G",
+    "/nvme500g/graph_2G",
+    10,
     100000,
+    700000,
 )
 
 
@@ -32,6 +42,11 @@ def dump():
 
 def sample():
     MAX_LEN = 20
+    Context.load_loc(dataset_path, graph_path)
+    # Prepare relations
+    Context.load_node_type_hash(f"{graph_path}/node_type_id.json")
+    Context.load_node_file_hash(f"{graph_path}/node_file_id.json")
+    Context.close()
     print(Context.node_attr_name, Context.node_attr_type)
     print(Context.NODE_TYPE)
     # READ: graph
@@ -83,17 +98,23 @@ def sample():
     )
 
 
+import time
 def clean(paths=[]):
     # Clean up
+    print("clean start")
+    ts = str(time.time())
     for p in paths:
-        os.system(f"rm -r {p}")
+        os.system(f"mv {p} {p}.{ts}; nohup rm -r {p}.{ts} &")
     # os.system(f"rm -r {graph_path}")
-    os.system(
-        f"find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete"
-    )
+    # os.system(
+    #     f"find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete"
+    # )
+    print("clean end")
 
-
+from numpygraph.utils import init_workder, connect_client
 def test_pipeline(debug=False):
+    client = connect_client()
+    init_workder(client)
     if not debug:
         clean([dataset_path, graph_path])
         mock()
@@ -102,12 +123,13 @@ def test_pipeline(debug=False):
         clean()
     else:
         # clean([dataset_path, graph_path])
-        clean([graph_path])
+        # clean([graph_path])
+
         # mock()
-        dump()
+        # dump()
         sample()
 
 
 if __name__ == "__main__":
-    cProfile.run("test_pipeline(True)", filename="result.out")
-    # test_pipeline()
+    # cProfile.run("test_pipeline(True)", filename="result.out")
+    test_pipeline(True)

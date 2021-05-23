@@ -16,6 +16,7 @@ from numpygraph.core.hash import chash
 from numpygraph.context import Context
 from numpygraph.mergeindex import MergeIndex
 from numpygraph.core.parse import Parse
+from numpygraph.utils import init_workder, connect_client
 
 
 def lines_sampler(relationship_files):
@@ -93,14 +94,19 @@ def node_hash_space_stat(
 
 
 def lines2idxarr(
-    output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_HASH
+    output,
+    splitfile_arguments,
+    chunk_id,
+    freq_nodes,
+    NODES_SHORT_HASH,
+    CONTEXT_TYPE_HASH,
 ):
     # output, (path, _from, _to), chunk = args
     with open(splitfile_arguments[0]) as f:
         FROM_COL, TO_COL = re.findall(r"\((.+?)\)", f.readline())
         FROM_COL_HASH, TO_COL_HASH = (
-            Context.query_type_hash(FROM_COL),
-            Context.query_type_hash(TO_COL),
+            CONTEXT_TYPE_HASH[FROM_COL],
+            CONTEXT_TYPE_HASH[TO_COL],
         )
     # FROM_SHORT_HASH, TO_SHORT_HASH = NODES_SHORT_HASH[FROM_COL], NODES_SHORT_HASH[TO_COL]
     # 固定为64的原因主要还是考虑后续会映射到edge dict中, 统一使用64bin去切割
@@ -210,30 +216,60 @@ def relationship2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
     freq_nodes, NODES_SHORT_HASH = node_hash_space_stat(
         key_sample_lines, nodes_line_num
     )
-    with Pool(processes=CHUNK_COUNT) as pool:
-    
-        for relation in glob.glob(f"{dataset}/relation_*.csv"):
-            relation, basename = os.path.abspath(relation), os.path.basename(
-                relation
-            )
-            start_time = time.time()
-            print("## Relationship to index array transforming... ##", relation)
-            pool.starmap(
+    client = connect_client()
+    # init_workder(client)
+    # with Pool(processes=CHUNK_COUNT) as pool:
+    start_time = time.time()
+    futures = []
+    for relation in glob.glob(f"{dataset}/relation_*.csv"):
+        relation, basename = os.path.abspath(relation), os.path.basename(
+            relation
+        )
+
+        print("## Relationship to index array transforming... ##", relation)
+        futures += [
+            client.submit(
                 lines2idxarr,
-                [
-                    (
-                        f"{graph}/{basename}.idxarr",
-                        splitfile_arguments,
-                        chunk_id,
-                        freq_nodes,
-                        NODES_SHORT_HASH,
-                    )
-                    for chunk_id, splitfile_arguments in enumerate(
-                        SplitFile.split(relation, num=CHUNK_COUNT, jump=1)
-                    )
-                ],
+                f"{graph}/{basename}.idxarr",
+                splitfile_arguments,
+                chunk_id,
+                freq_nodes,
+                NODES_SHORT_HASH,
+                Context.NODE_TYPE,
+                pure=False,
             )
-            print("Time usage:", time.time() - start_time)
+            for chunk_id, splitfile_arguments in enumerate(
+                SplitFile.split(relation, num=CHUNK_COUNT, jump=1)
+            )
+        ]
+    _ = client.gather(futures)
+
+    # with Pool(processes=CHUNK_COUNT) as pool:
+    #     args = []
+    #     for relation in glob.glob(f"{dataset}/relation_*.csv"):
+    #         relation, basename = os.path.abspath(relation), os.path.basename(
+    #             relation
+    #         )
+    #         print("## Relationship to index array transforming... ##", relation)
+    #         args += [
+    #             (
+    #                 f"{graph}/{basename}.idxarr",
+    #                 splitfile_arguments,
+    #                 chunk_id,
+    #                 freq_nodes,
+    #                 NODES_SHORT_HASH,
+    #                 Context.NODE_TYPE,
+    #             )
+    #             for chunk_id, splitfile_arguments in enumerate(
+    #                 SplitFile.split(
+    #                     relation,
+    #                     num=random.randint(CHUNK_COUNT // 2, CHUNK_COUNT * 1.5),
+    #                     jump=1,
+    #                 )
+    #             )
+    #         ]
+    #     pool.starmap(lines2idxarr, args)
+    print("Time usage:", time.time() - start_time)
 
 
 # relationship2indexarray and its helper functions
@@ -437,7 +473,7 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
 
 
 def node2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
-    with Pool(processes=CHUNK_COUNT) as pool:       
+    with Pool(processes=CHUNK_COUNT) as pool:
         for nodefile in glob.glob(f"{dataset}/node_*.csv"):
             nodefile, basename = os.path.abspath(nodefile), os.path.basename(
                 nodefile
@@ -445,7 +481,10 @@ def node2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
             print("nodefile", nodefile, "basename", basename)
             node_type = basename.split("_")[1].split(".")[0]
             start_time = time.time()
-            print("## Node slicing and to index array transforming... ##", nodefile)
+            print(
+                "## Node slicing and to index array transforming... ##",
+                nodefile,
+            )
             re_value = pool.starmap(
                 node2idxarr,
                 [

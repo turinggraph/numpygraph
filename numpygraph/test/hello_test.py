@@ -25,3 +25,22 @@ def test_2():
 def test_4():
     print("Test_4 called.")
     assert 2 == 1 + 1
+
+
+
+import tracemalloc
+
+tracemalloc.start()
+
+# ... run your application ...
+print("AF")
+
+snapshot = tracemalloc.take_snapshot()
+top_stats = snapshot.statistics('lineno')
+
+print("[ Top 10 ]")
+print(str(top_stats))
+for stat in top_stats[:10]:
+    print(stat)
+
+

@@ -1,5 +1,6 @@
 # HASH_SHORT = 64
-NODE_TYPE_MASK = 2 ** 60 - 1
+# NODE_TYPE_MASK = 2 ** 60 - 1
+NODE_TYPE_MASK = 2 ** 59 - 1
 
 
 def chash(t, s):

@@ -17,6 +17,7 @@ class ArrayList:
         self.array_current: np.array = None
         self.tail_cursor: int = 0
         self.array_cursor = 0
+        self.chunk_buffer = np.empty(dtype=self.dtype, shape=(self.chunk_size, 1))
         pass
 
     def __len__(self):
@@ -41,7 +42,7 @@ class ArrayList:
         if array_index + 1 > len(self.arrays):
             # 首先将前一个array 替换为 memmap 到磁盘里
             self.flush()
-            self.arrays.append(np.zeros(dtype=self.dtype, shape=(self.chunk_size, 1)))
+            self.arrays.append(self.chunk_buffer)
             self.array_current = self.arrays[array_index]
             self.array_cursor += 1
         self.array_current[array_local_cursor] = value

@@ -43,6 +43,27 @@ class Context:
             Context.node_file_hash(fn)
         with open(Context.node_file_path, "w") as f:
             f.write(json.dumps(Context.NODE_FILE))
+        with open(
+            Context.node_file_path.replace(
+                ".json", "_node_attr_name_without_str.json"
+            ),
+            "w",
+        ) as f:
+            f.write(json.dumps(Context.node_attr_name_without_str))
+        with open(
+            Context.node_file_path.replace(
+                ".json", "_node_attr_type_without_str.json"
+            ),
+            "w",
+        ) as f:
+            f.write(
+                json.dumps(
+                    {
+                        k: [Parse.get_type_reverse(t) for t in v]
+                        for k, v in Context.node_attr_type_without_str.items()
+                    }
+                )
+            )
 
     @staticmethod
     def prepare_relations(relation_files):
@@ -75,7 +96,8 @@ class Context:
             return Context.NODE_TYPE[col]
         else:
             # TODO: current query did not make use of the "60" here and the "60" in the chash function of hash
-            Context.NODE_TYPE[col] = len(Context.NODE_TYPE) << 60
+            # Context.NODE_TYPE[col] = len(Context.NODE_TYPE) << 60
+            Context.NODE_TYPE[col] = len(Context.NODE_TYPE) << 59
             return Context.NODE_TYPE[col]
 
     @staticmethod
@@ -137,13 +159,32 @@ class Context:
             Context.NODE_FILE = {}
             return
         Context.NODE_FILE = json.loads(open(Context.node_file_path, "r").read())
+        Context.node_attr_name_without_str = json.loads(
+            open(
+                Context.node_file_path.replace(
+                    ".json", "_node_attr_name_without_str.json"
+                ),
+                "r",
+            ).read()
+        )
+        Context.node_attr_type_without_str = {
+            k: [Parse.get_type(e) for e in v]
+            for k, v in json.loads(
+                open(
+                    Context.node_file_path.replace(
+                        ".json", "_node_attr_type_without_str.json"
+                    ),
+                    "r",
+                ).read()
+            ).items()
+        }
 
     @staticmethod
     def close():
         # Denote that writing to Context is done, no more further changed to Context will be applied.
         for (node_type, hash_value) in Context.NODE_TYPE.items():
             Context.HASH_NODE_TYPE[hash_value] = node_type
-            Context.HASH_SHORT_NODE_TYPE[hash_value >> 60] = node_type
+            Context.HASH_SHORT_NODE_TYPE[hash_value >> 59] = node_type
         for (file_path, hash_value) in Context.NODE_FILE.items():
             Context.HASH_NODE_FILE[hash_value] = file_path
         Context.closed = True
@@ -154,6 +195,11 @@ class Context:
 
     @staticmethod
     def query_type_hash(value):
+        return Context.NODE_TYPE[value]
+
+    @staticmethod
+    def query_type_hash_sync(value, path):
+        Context.load_node_type_hash(path)
         return Context.NODE_TYPE[value]
 
     @staticmethod
@@ -190,5 +236,6 @@ class Context:
 
     @staticmethod
     def parse_node_type(node_id):
-        type_hash_short = node_id >> 60
+        # type_hash_short = node_id >> 60
+        type_hash_short = node_id >> 59
         return Context.HASH_SHORT_NODE_TYPE[type_hash_short]

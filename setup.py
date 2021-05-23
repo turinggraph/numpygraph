@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import setuptools
 import glob
 from numpygraph import __version__
@@ -15,6 +16,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/turinggraph/numpygraph",
     packages=setuptools.find_packages(),
+    zip_safe=False,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
@@ -22,5 +24,5 @@ setuptools.setup(
     ],
     entry_points={"console_scripts": ["npg = numpygraph:cmd"]},
     python_requires=">=3.6",
-    install_requires=open("./requirements.txt", "r").read().strip().split("\n"),
+    install_requires=open("requirements.txt", "r").read().strip().split("\n"),
 )

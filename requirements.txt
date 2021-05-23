@@ -1,6 +1,6 @@
 fire 
 fuzzyfinder 
-prompt_toolkit
+prompt_toolkit==3.0.8
 click
 twine
 numpy

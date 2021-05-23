@@ -3,11 +3,11 @@ from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion
-from prompt_toolkit.lexers import PygmentsLexer
+# from prompt_toolkit.lexers import PygmentsLexer
 import click
 from fuzzyfinder import fuzzyfinder
-from pygments.lexers import CypherLexer
-from pygments.lexers.html import HtmlLexer
+# from pygments.lexers import CypherLexer
+# from pygments.lexers.html import HtmlLexer
 import os
 from pathlib import Path
 

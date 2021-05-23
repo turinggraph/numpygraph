@@ -47,19 +47,32 @@ class Read:
                 )
             )
         )
-        alist = np.memmap(
-            filename=f"{self.graph}/node_{node_type}.csv.curarr/hid_{node_type}.curarr.chunk_{chunk_id}",
-            dtype=data_type,
-        )
-        return alist[local_cursor]
-        # with open(f"{self.dataset}/node_{node_type}.csv") as f:
-        #     try:
-        #         f.seek(cursor)
-        #         node_info = f.readline()
-        #         if self.fetch_node_id(node_type, node_info.split(',')[0]) == node_id:
-        #             return node_info.strip('\n')
-        #     except ValueError:
-        #         pass
+        if chunk_id < 0:
+            print(
+                f"{self.graph}/nodes_mapper/{node_type}.dict.arr",
+                node_id_asarray,
+                node_type,
+                chunk_id,
+            )
+        is_from_array = True
+        if is_from_array:
+            alist = np.memmap(
+                filename=f"{self.graph}/node_{node_type}.csv.curarr/hid_{node_type}.curarr.chunk_{chunk_id}",
+                dtype=data_type,
+            )
+            return alist[local_cursor]
+        else:  # from raw
+            with open(f"{self.dataset}/node_{node_type}.csv") as f:
+                try:
+                    f.seek(cursor)
+                    node_info = f.readline()
+                    if (
+                        self.fetch_node_id(node_type, node_info.split(",")[0])
+                        == node_id
+                    ):
+                        return node_info.strip("\n")
+                except ValueError:
+                    pass
 
     def fetch_edge_attr(self, fid, tid):
         """
