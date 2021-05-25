@@ -41,7 +41,7 @@ def lines_sampler(relationship_files):
 
         lines = list(sample_lines(splitfiles))
         for line in lines:
-            keys = line.replace("\n", "").split(",")
+            keys = line.replace("\n", "").split(Context.DELIMITER)
             if len(keys) != 3:
                 continue
             key_sample_lines[from_col].append(keys[0])
@@ -173,7 +173,7 @@ def lines2idxarr(
 
     for line in splitfile:
         # from_str, to_str
-        r = line[:-1].split(",")
+        r = line[:-1].split(Context.DELIMITER)
         if len(r) < 3:
             # TODO: 最小限制应为2
             # ts单独设列
@@ -454,7 +454,7 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
     # using the cursor in splitfile through the function tell is a much safer way to index the line info
 
     for line in splitfile:
-        seg = line[:-1].split(",")
+        seg = line[:-1].split(Context.DELIMITER)
         nid = chash(NODE_COL_HASH, seg[0])
         seg = list(compress(seg[1:], Context.query_valid_attrs(NODE_COL)))
         attrs = [nid, cursor, chunk_id, len(node_cursor_lists)]

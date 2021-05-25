@@ -10,6 +10,10 @@ import pickle
 from numpygraph.core.parse import Parse
 
 
+class MAGIC:
+    pass
+
+
 class Context:
     dataset = ""
     graph = ""
@@ -30,6 +34,7 @@ class Context:
     closed = False
     node_attr_chunk_num = {}
     node_csv_chunk_num = {}
+    DELIMITER = "|"
 
     @staticmethod
     def load_loc(dataset_path, graph_path):
@@ -76,7 +81,7 @@ class Context:
                 edge_type = FROM_COL + TO_COL
                 attr_name = []
                 attr_type = []
-                for item in header_line.split(",")[2:]:
+                for item in header_line.split(Context.DELIMITER)[2:]:
                     item = item.strip()
                     item_name = item.split(":")[0]
                     item_type = Parse.get_type(item.split(":")[1])
@@ -115,7 +120,7 @@ class Context:
                 node_type = re.findall(r"\((.+?)\)", header_line)[0]
                 attr_name = []
                 attr_type = []
-                for item in header_line.split(",")[1:]:
+                for item in header_line.split(Context.DELIMITER)[1:]:
                     item = item.strip()
                     item_name = item.split(":")[0]
                     item_type = Parse.get_type(item.split(":")[1])

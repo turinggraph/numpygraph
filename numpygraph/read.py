@@ -16,7 +16,7 @@ class Read:
         node_hash = chash(node_type_hash, node_value)
         return node_hash
 
-    def fetch_node_attr(self, _id):
+    def fetch_node_attr(self, _id, is_from_array=True):
         node_id = _id
         node_type = Context.parse_node_type(node_id)
         adict = ArrayDict(
@@ -54,7 +54,6 @@ class Read:
                 node_type,
                 chunk_id,
             )
-        is_from_array = True
         if is_from_array:
             alist = np.memmap(
                 filename=f"{self.graph}/node_{node_type}.csv.curarr/hid_{node_type}.curarr.chunk_{chunk_id}",
@@ -67,7 +66,7 @@ class Read:
                     f.seek(cursor)
                     node_info = f.readline()
                     if (
-                        self.fetch_node_id(node_type, node_info.split(",")[0])
+                        self.fetch_node_id(node_type, node_info.split(Context.DELIMITER)[0])
                         == node_id
                     ):
                         return node_info.strip("\n")

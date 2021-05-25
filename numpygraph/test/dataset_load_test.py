@@ -3,6 +3,7 @@ import glob
 import os
 from numpygraph.load import load
 from numpygraph.read import Read
+import re
 from numpygraph.datasets.make_neo4j_csv import graph_generator
 from numpygraph.context import Context
 import cProfile
@@ -13,14 +14,16 @@ dataset_path, graph_path, node_type_cnt, node_cnt, edge_cnt = (
     # "/data/tmp/graph_10G",
     # "/opt/shm/_dataset_test_directory_20G",
     # "/nvme500g/_dataset_test_directory_20G",
-    "/nvme500g/_dataset_test_directory_2G",
+    # "/nvme500g/_dataset_test_directory_2G",
+    "/nvme500g/phoneinfo_neo4j",
     # "/opt/shm/_dataset_test_directory_20G",
     # "/dev/shm/graph_10G",
     # "/opt/shm/_dataset_test_directory_10G",
     # "/opt/shm/graph_10G",
     # "/dev/shm/graph_20G",
     # "/nvme500g/graph_20G",
-    "/nvme500g/graph_2G",
+    # "/nvme500g/graph_2G",
+    "/nvme500g/graph_phoneinfo_neo4j",
     10,
     100000,
     700000,
@@ -55,15 +58,19 @@ def sample():
     sample_file = random.sample(glob.glob(f"{dataset_path}/relation_*.csv"), 1)[
         0
     ]
-    sample_node_type = os.path.basename(sample_file).split("_")[1]
+
+    # sample_node_type = os.path.basename(sample_file).split("_")[1]
+    sample_node_type, another_node_type = re.findall(
+        r"\((.+?)\)", open(sample_file).readline()
+    )
     random_line = random.sample(open(sample_file).readlines(), 1)[0].strip("\n")
     print("Edge:", random_line)
-    sample_node_value = random_line.split(",")[0]
+    sample_node_value = random_line.split(Context.DELIMITER)[0]
     sample_node_id = read.fetch_node_id(sample_node_type, sample_node_value)
-    another_node_type = (
-        os.path.basename(sample_file).split("_")[2].split(".")[0]
-    )
-    another_node_value = random_line.split(",")[1]
+    # another_node_type = (
+    #     os.path.basename(sample_file).split("_")[2].split(".")[0]
+    # )
+    another_node_value = random_line.split(Context.DELIMITER)[1]
     another_node_id = read.fetch_node_id(another_node_type, another_node_value)
     print(
         "Sample Node Type:",
@@ -80,6 +87,7 @@ def sample():
     )
     print("Another Node ID:", another_node_id)
     print("Node Attr:", read.fetch_node_attr(sample_node_id))
+    print("Node Attr Raw:", read.fetch_node_attr(sample_node_id, is_from_array=False))
     neighbor_nodes = read.fetch_node_neibor_nodes(sample_node_id)
     print("Neighbor nodes:", neighbor_nodes[:MAX_LEN])
     print("Neighbor nodes' attrs:")
@@ -99,6 +107,8 @@ def sample():
 
 
 import time
+
+
 def clean(paths=[]):
     # Clean up
     print("clean start")
@@ -111,7 +121,10 @@ def clean(paths=[]):
     # )
     print("clean end")
 
+
 from numpygraph.utils import init_workder, connect_client
+
+
 def test_pipeline(debug=False):
     client = connect_client()
     init_workder(client)

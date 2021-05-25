@@ -41,7 +41,7 @@ def lines_sampler(relationship_files):
 
         lines = list(sample_lines(splitfiles))
         for line in lines:
-            keys = line.replace("\n", "").split(",")
+            keys = line.replace("\n", "").split(Context.DELIMITER)
             if len(keys) != 3:
                 continue
             key_sample_lines[from_col].append(keys[0])
@@ -143,7 +143,7 @@ def lines2idxarr(
     if FROM_COL in freq_nodes:
         from_node_freq_dict = {
             fk: ArrayList(
-                "%s/hid_%s_%s.idxarr.chunk_%d"
+                "%s/hid-%s-%s.idxarr.chunk_%d"
                 % (freq_output, str(fk), FROM_COL, chunk_id),
                 chunk_size=random_chunk_size(),
                 dtype=[("to", np.int64), ("ts", np.int32)],
@@ -156,7 +156,7 @@ def lines2idxarr(
     if TO_COL in freq_nodes:
         to_node_freq_dict = {
             tk: ArrayList(
-                "%s/hid_%s_%s.idxarr.chunk_%d"
+                "%s/hid-%s-%s.idxarr.chunk_%d"
                 % (freq_output, str(tk), TO_COL, chunk_id),
                 chunk_size=random_chunk_size(),
                 dtype=[("to", np.int64), ("ts", np.int32)],
@@ -169,19 +169,27 @@ def lines2idxarr(
 
     for line in splitfile:
         # from_str, to_str
-        r = line[:-1].split(",")
-        if len(r) < 3:
+        r = line[:-1].split(Context.DELIMITER)
+        _len = len(r)
+        if _len < 2:
             # TODO: 最小限制应为2
             # ts单独设列
             # 属性单独设列
             # DSL 变相支持
             continue
         try:
-            h1, h2, ts = (
-                chash(FROM_COL_HASH, r[0]),
-                chash(TO_COL_HASH, r[1]),
-                int(r[2]),
-            )
+            if _len == 2:
+                h1, h2, ts = (
+                    chash(FROM_COL_HASH, r[0]),
+                    chash(TO_COL_HASH, r[1]),
+                    0,  # TODO:
+                )
+            else:
+                h1, h2, ts = (
+                    chash(FROM_COL_HASH, r[0]),
+                    chash(TO_COL_HASH, r[1]),
+                    int(r[2]),
+                )
         except ValueError:
             continue
         # 记录高频节点, 自动双向
@@ -288,7 +296,7 @@ def merge_index_array_then_sort(graph):
         files_hash_dict[hash_id].append(cfile)
     for ffile in freq_files:
         fname = os.path.basename(ffile)
-        fid = int(fname.split("_")[1])
+        fid = int(fname.split("-")[1])  # TODO: 不建议将freqid放在文件名里, 建议拆解至json变量中
         files_freq_dict[fid].append(ffile)
 
     edges_count_sum = sum(
@@ -449,7 +457,7 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
     # using the cursor in splitfile through the function tell is a much safer way to index the line info
 
     for line in splitfile:
-        seg = line[:-1].split(",")
+        seg = line[:-1].split(Context.DELIMITER)
         nid = chash(NODE_COL_HASH, seg[0])
         seg = list(compress(seg[1:], Context.query_valid_attrs(NODE_COL)))
         attrs = [nid, cursor, chunk_id, len(node_cursor_lists)]
@@ -472,6 +480,10 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
     return chunk_id, len(node_cursor_lists)
 
 
+def node_file_type(nodefile):
+    return re.findall(r"\((.+?)\)", open(nodefile).readline())[0]
+
+
 def node2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
     with Pool(processes=CHUNK_COUNT) as pool:
         for nodefile in glob.glob(f"{dataset}/node_*.csv"):
@@ -479,7 +491,8 @@ def node2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
                 nodefile
             )
             print("nodefile", nodefile, "basename", basename)
-            node_type = basename.split("_")[1].split(".")[0]
+            node_type = node_file_type(nodefile)
+            # node_type = basename.split("_")[1].split(".")[0]
             start_time = time.time()
             print(
                 "## Node slicing and to index array transforming... ##",
