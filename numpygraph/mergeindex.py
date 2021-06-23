@@ -1,4 +1,7 @@
+import time
+
 import numpy as np
+import os
 
 
 def merge_mem_array(mems):
@@ -20,23 +23,17 @@ def unique_inplace(arr, unique=None, order=None, axis=0, kind='mergesort'):
 
 
 class MergeIndex:
-    edge_to_cursor = 0
-    toarrconcat: np.memmap = None
-    freq_idx_pointer = {}
+    def __init__(self):
+        self.edge_to_cursor = 0
+        self.toarrconcat: np.memmap = None
+        self.freq_idx_pointer = {}
 
-    @staticmethod
-    def merge_idx_to(k, ipts):
-        '''
-        '''
+    def merge_idx_to_wrapper(self, k, ipts):
+        # print("merge_idx_to_wrapper", k, flush=True)
         mems = [np.memmap(f, mode='r', dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)])
                 for f in ipts]
         arr = merge_mem_array(mems)
         _val, _idx, _len = unique_inplace(arr, unique='from', order=['from', 'ts'])
-        return k, ipts, arr, _val, _idx, _len
-
-    @staticmethod
-    def merge_idx_to_callback(args):
-        k, ipts, arr, _val, _idx, _len = args
         # TODO: 语意不明确
         graph = "/".join(ipts[0].split("/")[:-2])
         idxarr = np.memmap(f"{graph}/edges_sort/{k}.idx.arr",
@@ -47,53 +44,52 @@ class MergeIndex:
                                   ('index', np.int64),
                                   ('length', np.int32)])
         idxarr['value'] = _val
-        idxarr['index'] = _idx + MergeIndex.edge_to_cursor
+        idxarr['index'] = _idx + self.edge_to_cursor
         idxarr['length'] = _len
 
-        MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + arr.shape[0]]['value'] = arr['to']
-        MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + arr.shape[0]]['ts'] = arr['ts']
-        MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + arr.shape[0]]['index'] = arr['from']
-        MergeIndex.edge_to_cursor += arr.shape[0]
+        self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['value'] = arr['to']
+        self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['ts'] = arr['ts']
+        self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['index'] = arr[
+            'from']
+        self.edge_to_cursor += arr.shape[0]
+        # print("merge_idx_to_wrapper", k, "finished", flush=True)
+        return 1
 
-    @staticmethod
-    def merge_freq_idx_to(k, ipts):
-        # 针对高频节点边表merge处理
+    def merge_freq_idx_to_wrapper(self, k, ipts):
+        # print("merge_freq_idx_to_wrapper", k, flush=True)
         mems = [np.memmap(f, mode='r', dtype=[('to', np.int64), ('ts', np.int32)])
                 for f in ipts]
-        return k, mems
-        pass
-
-    @staticmethod
-    def merge_freq_idx_to_callback(args):
-        # 针对高频节点边表merge处理，回调
-        k, mems = args
         value = k
-        index = MergeIndex.edge_to_cursor
+        index = self.edge_to_cursor
         length = sum([m.shape[0] for m in mems])
-        MergeIndex.freq_idx_pointer[value] = (index, length)
+        self.freq_idx_pointer[value] = (index, length)
         for m in mems:
-            MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + m.shape[0]]['value'] = m['to']
-            MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + m.shape[0]]['ts'] = m['ts']
-            MergeIndex.toarrconcat[MergeIndex.edge_to_cursor: MergeIndex.edge_to_cursor + m.shape[0]]['index'] = k
-            MergeIndex.edge_to_cursor += m.shape[0]
-        pass
+            self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['value'] = m['to']
+            self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['ts'] = m['ts']
+            self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['index'] = k
+            self.edge_to_cursor += m.shape[0]
 
-    @staticmethod
-    def freq_idx_pointer_dump(graph):
+        # print("merge_freq_idx_to_wrapper", k, "finished", flush=True)
+        return 1
+
+    def freq_idx_pointer_dump(self, context):
         # 针对高频节点->边索引表的处理
         # TODO: 针对高频节点为空的异常处理
-        if len(MergeIndex.freq_idx_pointer) == 0:
-            return
-        idxarr = np.memmap(f"{graph}/edges_sort/hid_freq.idx.arr",
-                           mode='w+',
-                           order='F',
-                           shape=(len(MergeIndex.freq_idx_pointer),),
-                           dtype=[('value', np.int64),
-                                  ('index', np.int64),
-                                  ('length', np.int32)])
+        stime = time.time()
+        print(f"Executing freq_idx_pointer_dump, starting at {stime}")
+        if len(self.freq_idx_pointer) != 0:
+            idxarr = np.memmap(f"{context.graph}/edges_sort/hid_freq.idx.arr",
+                               mode='w+',
+                               order='F',
+                               shape=(len(self.freq_idx_pointer),),
+                               dtype=[('value', np.int64),
+                                      ('index', np.int64),
+                                      ('length', np.int32)])
 
-        for idx, (value, (index, length)) in enumerate(MergeIndex.freq_idx_pointer.items()):
-            idxarr[idx]['value'] = value
-            idxarr[idx]['index'] = index
-            idxarr[idx]['length'] = length
-            pass
+            for idx, (value, (index, length)) in enumerate(self.freq_idx_pointer.items()):
+                idxarr[idx]['value'] = value
+                idxarr[idx]['index'] = index
+                idxarr[idx]['length'] = length
+        etime = time.time()
+        print(f"Finished freq_idx_pointer_dump, ends at {etime}")
+        return 1

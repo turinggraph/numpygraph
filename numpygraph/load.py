@@ -18,9 +18,10 @@ from numpygraph.mergeindex import MergeIndex
 from numpygraph.core.parse import Parse
 
 
-def lines_sampler(relationship_files):
+def lines_sampler(context):
     """ 对图数据集做采样统计, 供后续估计hash空间使用, 提升导入效率
     """
+    relationship_files = context.relation_files
     key_sample_lines, nodes_line_num = defaultdict(list), defaultdict(int)
     for relation in relationship_files:
         relation, _ = os.path.abspath(relation), os.path.basename(relation)
@@ -53,13 +54,14 @@ def lines_sampler(relationship_files):
     return key_sample_lines, nodes_line_num
 
 
-def node_hash_space_stat(key_sample_lines, nodes_line_num,
+def node_hash_space_stat(context, key_sample_lines_AND_nodes_line_num,
                          without_freq=False,
                          HID_BATCH_SIZE_AVERAGE=int(5e6),
                          FREQ_WORDS_TOP_KEEP=10,
                          FREQ_WORDS_TOP_RATIO=0.01):
     """ 根据数据集的分布情况自动切分hash空间和高频节点列表
     """
+    key_sample_lines, nodes_line_num = key_sample_lines_AND_nodes_line_num
     NODES_SHORT_HASH, freq_nodes = {}, {}
     for node, l in nodes_line_num.items():
         NODES_SHORT_HASH[node] = l // HID_BATCH_SIZE_AVERAGE
@@ -76,15 +78,35 @@ def node_hash_space_stat(key_sample_lines, nodes_line_num,
         NODES_SHORT_HASH[node] = int(nodes_line_num[node] * (1 - freqrate)) // HID_BATCH_SIZE_AVERAGE
         # 建立节点高频word集合
         if len(freqitem) > 0:
-            freq_nodes[node] = set([chash(Context.query_type_hash(node), item[0]) for item in freqitem])
-    return freq_nodes, NODES_SHORT_HASH
+            freq_nodes[node] = set([chash(context.query_type_hash(node), item[0]) for item in freqitem])
+    return (freq_nodes, NODES_SHORT_HASH)
 
 
-def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_HASH):
+def linesidxarr_arg_gen(context, node_hash_space_stat_arg):
+    result = []
+    freq_nodes, NODES_SHORT_HASH = node_hash_space_stat_arg
+    CHUNK_COUNT = cpu_count()
+    for relation in context.relation_files:
+        basename = os.path.basename(relation)
+        result.extend([
+            (
+                f"{context.graph}/{basename}.idxarr",
+                splitfile_arguments,
+                chunk_id,
+                freq_nodes,
+                context
+            )
+            for chunk_id, splitfile_arguments in
+            enumerate(SplitFile.split(relation, num=CHUNK_COUNT, jump=1))
+        ])
+    return result
+
+
+def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, context):
     # output, (path, _from, _to), chunk = args
     with open(splitfile_arguments[0]) as f:
         FROM_COL, TO_COL = re.findall(r"\((.+?)\)", f.readline())
-        FROM_COL_HASH, TO_COL_HASH = Context.query_type_hash(FROM_COL), Context.query_type_hash(TO_COL)
+        FROM_COL_HASH, TO_COL_HASH = context.query_type_hash(FROM_COL), context.query_type_hash(TO_COL)
     # FROM_SHORT_HASH, TO_SHORT_HASH = NODES_SHORT_HASH[FROM_COL], NODES_SHORT_HASH[TO_COL]
     # 固定为64的原因主要还是考虑后续会映射到edge dict中, 统一使用64bin去切割
     FROM_SHORT_HASH, TO_SHORT_HASH, SHORT_HASH_MASK = 64, 64, (1 << 6) - 1
@@ -163,6 +185,7 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
     if tfdict_able_flag:
         for arraylist in to_node_freq_dict.values():
             arraylist.close(merge=False)
+    return 1
 
 
 def relationship2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
@@ -187,6 +210,56 @@ def relationship2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
 # relationship2indexarray and its helper functions
 # ===================================Dividing line====================================================
 # merge_index_array_then_sort and its helper functions
+def edge_count_sum_chunk(context):
+    chunk_files = list(glob.glob(f"{context.graph}/*.idxarr/hid_*_*.idxarr.chunk*"))
+    files_hash_dict = defaultdict(list)
+    for cfile in chunk_files:
+        hash_id = re.findall(".*/(.+?).idxarr*", cfile)[0]
+        files_hash_dict[hash_id].append(cfile)
+    return files_hash_dict
+
+
+def edge_count_sum_freq(context):
+    freq_files = list(glob.glob(f"{context.graph}/*.idxarr/freq_edges/hid_*.chunk*"))
+    files_freq_dict = defaultdict(list)
+    for ffile in freq_files:
+        fname = os.path.basename(ffile)
+        fid = int(fname.split('_')[1])
+        files_freq_dict[fid].append(ffile)
+    return files_freq_dict
+
+
+def summing(files_hash_dict, files_freq_dict):
+    result = sum(
+        [np.memmap(f, mode='r', dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)]).shape[0]
+         for f in sum(list(files_hash_dict.values()), [])])
+    result += sum([np.memmap(f, mode='r', dtype=[('to', np.int64), ('ts', np.int32)]).shape[0]
+                   for f in sum(list(files_freq_dict.values()), [])])
+    return result
+
+
+def MergeIndex_gen(context, edges_count_sum):
+    os.makedirs(f"{context.graph}/edges_sort", exist_ok=True)
+    mergeindex = MergeIndex()
+    mergeindex.edge_to_cursor = 0
+    print("edges_count_sum =", edges_count_sum)
+    mergeindex.toarrconcat = np.memmap(f"{context.graph}/concat.to.arr",
+                                       mode='w+',
+                                       shape=(edges_count_sum,),
+                                       order='F',
+                                       dtype=[('index', np.int64), ('value', np.int64), ('ts', np.int32)])
+    return mergeindex
+
+
+def merge_idx_to_gen(mergeindex, files_hash_dict):
+    print("gen merge_idx", flush=True)
+    return [(mergeindex,) + item for item in list(files_hash_dict.items())]
+
+
+def merge_freq_idx_to_gen(mergeindex, files_freq_dict):
+    print("gen freq_idx", flush=True)
+    return [(mergeindex,) + item for item in list(files_freq_dict.items())]
+
 
 def merge_index_array_then_sort(graph):
     # chunk split
@@ -240,6 +313,10 @@ def merge_index_array_then_sort(graph):
 # and array storing node's relationships
 # Files other than edges sort and edges mapper can be removed at this step, probably.
 
+def hid_idx_dict_gen(graph):
+    return [(graph, i) for i in range(64)]
+
+
 def hid_idx_dict(graph, _id):
     # 所有short hid为_id的节点(不区分节点类型)索引全部都放入同一个字典中
     idxarr = [np.memmap(f,
@@ -276,6 +353,7 @@ def hid_idx_dict(graph, _id):
         adict[freqarr['value']] = freqarr[['index', 'length']]
 
 
+# not used
 def hid_idx_merge(graph):
     p = Pool(processes=cpu_count())
     stime = time.time()

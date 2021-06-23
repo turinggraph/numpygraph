@@ -13,3 +13,10 @@ build
 
 
 .vscode/
+
+# ignore mock data folder
+_dataset_test_directory/
+_graph/
+
+# ignore tinydag log
+log/
