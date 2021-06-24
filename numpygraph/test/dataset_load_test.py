@@ -1,12 +1,11 @@
 import random
 import glob
 import os
-from numpygraph.load import load
+from numpygraph.dag_load import dag_load
 from numpygraph.read import Read
 from numpygraph.datasets.make_neo4j_csv import graph_generator
-from numpygraph.context import Context
 
-dataset_path, graph_path, node_type_cnt, node_cnt, edge_cnt = "_dataset_test_directory", "graph", 5, 1000, 10000
+dataset_path, graph_path, node_type_cnt, node_cnt, edge_cnt = "_dataset_test_directory", "_graph", 5, 1000, 10000
 
 
 def mock():
@@ -19,14 +18,12 @@ def mock():
 
 def dump():
     # LOAD: dataset -> graph
-    load(dataset_path, graph_path)
+    return dag_load(dataset_path, graph_path)
 
 
-def sample():
-    print(Context.node_attr_name, Context.node_attr_type)
-    print(Context.NODE_TYPE)
+def sample(context):
     # READ: graph
-    read = Read(dataset_path, graph_path)
+    read = Read(dataset_path, graph_path, context)
     # Sample node, id
     sample_file = random.sample(glob.glob(f"{dataset_path}/relation_*.csv"), 1)[0]
     sample_node_type = os.path.basename(sample_file).split("_")[1]
@@ -63,6 +60,6 @@ def clean():
 def test_pipeline():
     clean()
     mock()
-    dump()
-    sample()
+    context = dump()
+    sample(context)
     clean()

@@ -375,18 +375,18 @@ class Task(GraphVizMixin):
             logger.log("UpdateTaskState", {"id": _id, "state": "Running"})
             stime = time.time()
             result = func(*_args, **_kwargs)
-            # logger.log(
-            #     "UpdateTaskState",
-            #     {
-            #         "result": result,
-            #         "id": _id,
-            #         "state": "Success",
-            #         "delta": "%.3f" % (time.time() - stime),
-            #     },
-            # )
+            logger.log(
+                "UpdateTaskState",
+                {
+                    "result": result,
+                    "id": _id,
+                    "state": "Success",
+                    "delta": "%.3f" % (time.time() - stime),
+                },
+            )
             message.put(result)
         except Exception as e:
-            print("Exception in execution...")
+            print(f"Exception in execution...{func}")
             print(e)
             print("_args:", *_args)
             print("_kwargs:", **_kwargs)

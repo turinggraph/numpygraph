@@ -1,24 +1,17 @@
-import time
-
-from tinydag.tinydag import Task, EndTask, DAG, Logger
-from tinydag.tinydag import MultiProcessTask
+from numpygraph.tinydag.tinydag import Task, EndTask, DAG, Logger
+from numpygraph.tinydag.tinydag import MultiProcessTask
 
 import numpygraph
 import numpygraph.load
 from numpygraph.lib.splitfile import SplitFile
-from numpygraph.core.arraylist import ArrayList
-from numpygraph.core.arraydict import ArrayDict
-from numpygraph.core.hash import chash
 from numpygraph.context import Context
 from numpygraph.mergeindex import MergeIndex
-from numpygraph.core.parse import Parse
 
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from multiprocessing import cpu_count
 
 import os
 import glob
-import random
+import time
 
 logger = Logger()
 
@@ -39,6 +32,7 @@ def dag_load(dataset_path, graph_path):
         return 0
 
     # load relationships
+    print("Load relations")
     relationship2indexarray = DAG(
         {
             "lines_sampler": Task(numpygraph.load.lines_sampler, "$context"),
@@ -51,11 +45,11 @@ def dag_load(dataset_path, graph_path):
         }
     )(context=context)
 
-    # load nodes
     with ThreadPoolExecutor(max_workers=thread_num) as pool:
         relationship2indexarray.execute(pool).get()
 
     # merge index array then sort
+    print("merge index array then sort")
     merge_index_array_then_sort = DAG(
         {
             "files_hash_dict": Task(numpygraph.load.edge_count_sum_chunk, "$context"),
@@ -76,6 +70,7 @@ def dag_load(dataset_path, graph_path):
         merge_index_array_then_sort.execute(pool).get()
 
     # hid idx merge
+    print("hid idx merge")
     hid_idx_merge = DAG(
         {
             "gen": Task(numpygraph.load.hid_idx_dict_gen, "$graph"),
@@ -87,12 +82,41 @@ def dag_load(dataset_path, graph_path):
     with ThreadPoolExecutor(max_workers=thread_num) as pool:
         hid_idx_merge.execute(pool).get()
 
+    # node loading
+    print("node loading")
+
+    # node2indexarray
+    print("node2indexarray")
+    node2indexarray = DAG(
+        {
+            "gen": Task(numpygraph.load.node2idxarr_gen, "$context"),
+            "node2idxarr": MultiProcessTask(processpool, numpygraph.load.node2idxarr, "$gen"),
+            "write": EndTask(numpygraph.load.write_context, "$context", "$node2idxarr")
+        }
+    )(context=context)
+
+    with ThreadPoolExecutor(max_workers=thread_num) as pool:
+        node2indexarray.execute(pool).get()
+
+    print("merge_node_index")
+    merge_node_index = DAG(
+        {
+            "merge_node_cursor_dict_gen": Task(numpygraph.load.merge_node_cursor_dict_gen, "$context"),
+            "merge_node_cursor_dict": MultiProcessTask(processpool, numpygraph.load.merge_node_cursor_dict,
+                                                       "$merge_node_cursor_dict_gen"),
+            "Ending": EndTask(end, "$merge_node_cursor_dict"),
+        }
+    )(context=context)
+
+    with ThreadPoolExecutor(max_workers=thread_num) as pool:
+        merge_node_index.execute(pool).get()
+
+    print("Load finished")
+
+    return context
+
 
 if __name__ == "__main__":
-    # import tinydag
-    # tinydag.tinydag.check([1,2])
-    # tinydag.tinydag.check_custom_class()
-
     dataset_path, graph_path, node_type_cnt, node_cnt, edge_cnt = "_dataset_test_directory", "_graph", 5, 1000, 10000
 
 
@@ -112,10 +136,11 @@ if __name__ == "__main__":
         os.system(f"find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete")
 
 
-    # clean()
-    # mock()
+    clean()
+    mock()
+    os.system(f"rm -r {graph_path}")
     stime = time.time()
     dag_load(dataset_path, graph_path)
     etime = time.time()
     print(f"Time usage:", etime - stime)
-    # clean()
+    clean()

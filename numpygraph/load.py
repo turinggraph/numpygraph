@@ -365,8 +365,34 @@ def hid_idx_merge(graph):
 # hid_idx_merge
 # ===================================Dividing line====================================================
 # node2indexarray
+def node2idxarr_gen(context):
+    dataset = context.dataset
+    graph = context.graph
+    CHUNK_COUNT = os.cpu_count()
+    gen = []
+    for nodefile in glob.glob(f"{dataset}/node_*.csv"):
+        nodefile, basename = os.path.abspath(nodefile), os.path.basename(nodefile)
+        node_type = basename.split('_')[1].split('.')[0]
+        gen.extend([(f"{graph}/{basename}.curarr",
+                     node_type,
+                     splitfile_arguments,
+                     chunk_id,
+                     context)
+                    for chunk_id, splitfile_arguments in
+                    enumerate(SplitFile.split(nodefile, num=CHUNK_COUNT, jump=1))])
+    return gen
 
-def node2idxarr(output, splitfile_arguments, chunk_id):
+
+def write_context(context, node2idxarr):
+    for items in node2idxarr:
+        try:
+            context.node_attr_chunk_num[items[0]].append(items[1])
+        except:
+            context.node_attr_chunk_num[items[0]] = [items[1]]
+    return 1
+
+
+def node2idxarr(output, node_type, splitfile_arguments, chunk_id, context):
     def random_chunk_size():
         return random.randint(300000, 600000)
 
@@ -376,16 +402,15 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
         line = f.readline()
         NODE_COL, = re.findall(r"\((.+?)\)", line)
         # TODO: NODE_FILE_HASH = Context.node_file_hash(splitfile_arguments[0])
-        NODE_COL_HASH = Context.query_type_hash(NODE_COL)
+        NODE_COL_HASH = context.query_type_hash(NODE_COL)
     # 节点不再使用NODE_SHORT_HASH进行混合
     splitfile = SplitFile(*splitfile_arguments)
     data_type = [('nid', np.int64), ('cursor', np.int64), ('chunk_id', np.int64), ('local_cursor', np.int64)]
     data_type.extend(
-        list(zip(Context.query_node_attr_name_without_str(NODE_COL),
-                 Context.query_node_attr_type_without_str(NODE_COL)))
+        list(zip(context.query_node_attr_name_without_str(NODE_COL),
+                 context.query_node_attr_type_without_str(NODE_COL)))
     )
     node_cursor_lists = ArrayList("%s/hid_%s.curarr.chunk_%d" % (output, NODE_COL, chunk_id),
-                                  # chunk_size=random_chunk_size(),
                                   chunk_size=random_chunk_size(),
                                   dtype=data_type)
     _ = next(splitfile)
@@ -396,15 +421,17 @@ def node2idxarr(output, splitfile_arguments, chunk_id):
     for line in splitfile:
         seg = line[:-1].split(",")
         nid = chash(NODE_COL_HASH, seg[0])
-        seg = list(compress(seg[1:], Context.query_valid_attrs(NODE_COL)))
+        seg = list(compress(seg[1:], context.query_valid_attrs(NODE_COL)))
         attrs = [nid, cursor, chunk_id, len(node_cursor_lists)]
-        attrs.extend((list(map(Parse.get_value, Context.query_node_attr_type_without_str(NODE_COL)[:], seg[:]))))
+        # cannot convert dictionary update sequence element #0 to a sequence
+        attrs.extend((list(map(Parse.get_value, context.query_node_attr_type_without_str(NODE_COL)[:], seg[:]))))
         node_cursor_lists.append(tuple(attrs))
         cursor = splitfile.tell()
 
     node_cursor_lists.close(merge=True)
 
-    return chunk_id, len(node_cursor_lists)
+    re_value = chunk_id, len(node_cursor_lists)
+    return [node_type, re_value]
 
 
 def node2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
@@ -433,13 +460,19 @@ def node2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
 # ===================================Dividing line====================================================
 # merge_node_index
 
-def merge_node_cursor_dict(graph, node_type):
+# merge node index
+def merge_node_cursor_dict_gen(context):
+    return [(context, node_type) for node_type in context.NODE_TYPE.keys()]
+
+
+def merge_node_cursor_dict(context, node_type):
     # 将每个含有节点信息的arraylist转为arraydict
+    graph = context.graph
     idxarr_directory = f"{graph}/node_{node_type}.csv.curarr"
     data_type = [('nid', np.int64), ('cursor', np.int64), ('chunk_id', np.int64), ('local_cursor', np.int64)]
     data_type.extend(
-        list(zip(Context.query_node_attr_name_without_str(node_type),
-                 Context.query_node_attr_type_without_str(node_type)))
+        list(zip(context.query_node_attr_name_without_str(node_type),
+                 context.query_node_attr_type_without_str(node_type)))
     )
     idxarr = [
         np.memmap(f,
