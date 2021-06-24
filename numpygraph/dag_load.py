@@ -3,14 +3,12 @@ from numpygraph.tinydag.tinydag import MultiProcessTask
 
 import numpygraph
 import numpygraph.load
-from numpygraph.lib.splitfile import SplitFile
 from numpygraph.context import Context
 from numpygraph.mergeindex import MergeIndex
 
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 import os
-import glob
 import time
 
 logger = Logger()
@@ -61,8 +59,9 @@ def dag_load(dataset_path, graph_path):
             "merge_idx_to": MultiProcessTask(processpool, MergeIndex.merge_idx_to_wrapper, "$merge_idx_to_gen"),
             "merge_freq_idx_to": MultiProcessTask(processpool, MergeIndex.merge_freq_idx_to_wrapper,
                                                   "$merge_freq_idx_to_gen"),
+            "write_mergeindex": Task(MergeIndex.relation_dumper, "$mergeindex", "$merge_idx_to", "$merge_freq_idx_to"),
             "dump": Task(MergeIndex.freq_idx_pointer_dump, "$mergeindex", "$context"),
-            "Ending": EndTask(end, "$merge_idx_to", "$merge_freq_idx_to", "$dump")
+            "Ending": EndTask(end, "$write_mergeindex", "$dump")
         }
     )(context=context)
 

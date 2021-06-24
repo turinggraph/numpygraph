@@ -44,16 +44,17 @@ class MergeIndex:
                                   ('index', np.int64),
                                   ('length', np.int32)])
         idxarr['value'] = _val
-        idxarr['index'] = _idx + self.edge_to_cursor
+        idxarr['index'] = _idx  # + self.edge_to_cursor
         idxarr['length'] = _len
 
-        self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['value'] = arr['to']
-        self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['ts'] = arr['ts']
-        self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['index'] = arr[
-            'from']
-        self.edge_to_cursor += arr.shape[0]
-        # print("merge_idx_to_wrapper", k, "finished", flush=True)
-        return 1
+        return idxarr, arr
+        # self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['value'] = arr['to']
+        # self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['ts'] = arr['ts']
+        # self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['index'] = arr[
+        #     'from']
+        # self.edge_to_cursor += arr.shape[0]
+        # # print("merge_idx_to_wrapper", k, "finished", flush=True)
+        # return 1
 
     def merge_freq_idx_to_wrapper(self, k, ipts):
         # print("merge_freq_idx_to_wrapper", k, flush=True)
@@ -63,14 +64,33 @@ class MergeIndex:
         index = self.edge_to_cursor
         length = sum([m.shape[0] for m in mems])
         self.freq_idx_pointer[value] = (index, length)
-        for m in mems:
-            self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['value'] = m['to']
-            self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['ts'] = m['ts']
-            self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['index'] = k
-            self.edge_to_cursor += m.shape[0]
+        return mems, k
+        # for m in mems:
+        #     self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['value'] = m['to']
+        #     self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['ts'] = m['ts']
+        #     self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['index'] = k
+        #     self.edge_to_cursor += m.shape[0]
+        #
+        # # print("merge_freq_idx_to_wrapper", k, "finished", flush=True)
+        # return 1
 
-        # print("merge_freq_idx_to_wrapper", k, "finished", flush=True)
+    def relation_dumper(self, merge_idx_to, merge_freq_idx_to):
+        for idxarr, arr in merge_idx_to:
+            idxarr['index'] += self.edge_to_cursor
+            self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['value'] = arr['to']
+            self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['ts'] = arr['ts']
+            self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['index'] = arr['from']
+            self.edge_to_cursor += arr.shape[0]
+
+        for mems, k in merge_freq_idx_to:
+            for m in mems:
+                self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['value'] = m['to']
+                self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['ts'] = m['ts']
+                self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + m.shape[0]]['index'] = k
+                self.edge_to_cursor += m.shape[0]
+
         return 1
+        pass
 
     def freq_idx_pointer_dump(self, context):
         # 针对高频节点->边索引表的处理

@@ -35,10 +35,8 @@ class customJSONEncoder(json.JSONEncoder):
                     return json.dumps(vars(obj), cls=customJSONEncoder)
                 except TypeError:
                     return json.dumps(list(obj), cls=customJSONEncoder)
-        except Exception as e:
-            print("Exception in customJSONEncoder...")
-            print(e)
-            print(obj)
+        except:
+            return "None"  # json.JSONEncoder.default(self, type(obj))
 
 
 class Logger:
