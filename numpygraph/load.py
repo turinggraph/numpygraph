@@ -253,6 +253,18 @@ def MergeIndex_gen(context, edges_count_sum):
     return mergeindex
 
 
+def merge_freq_and_other_idx_to(context, files_hash_dict, files_freq_dict, mergeindex):
+    pool = Pool(processes=cpu_count())
+    for items in list(files_hash_dict.items()):
+        pool.apply_async(mergeindex.merge_idx_to, args=items, callback=mergeindex.merge_idx_to_callback)
+    for items in list(files_freq_dict.items()):
+        pool.apply_async(mergeindex.merge_freq_idx_to, args=items, callback=mergeindex.merge_freq_idx_to_callback)
+    pool.close()
+    pool.join()
+    mergeindex.freq_idx_pointer_dump(context)
+    return 1
+
+
 def merge_idx_to_gen(mergeindex, files_hash_dict):
     print("gen merge_idx", flush=True)
     return [(mergeindex,) + item for item in list(files_hash_dict.items())]

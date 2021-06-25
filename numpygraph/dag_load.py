@@ -54,14 +54,16 @@ def dag_load(dataset_path, graph_path):
             "files_freq_dict": Task(numpygraph.load.edge_count_sum_freq, "$context"),
             "edges_count_sum": Task(numpygraph.load.summing, "$files_hash_dict", "$files_freq_dict"),
             "mergeindex": Task(numpygraph.load.MergeIndex_gen, "$context", "$edges_count_sum"),
-            "merge_idx_to_gen": Task(numpygraph.load.merge_idx_to_gen, "$mergeindex", "$files_hash_dict"),
-            "merge_freq_idx_to_gen": Task(numpygraph.load.merge_freq_idx_to_gen, "$mergeindex", "$files_freq_dict"),
-            "merge_idx_to": MultiProcessTask(processpool, MergeIndex.merge_idx_to_wrapper, "$merge_idx_to_gen"),
-            "merge_freq_idx_to": MultiProcessTask(processpool, MergeIndex.merge_freq_idx_to_wrapper,
-                                                  "$merge_freq_idx_to_gen"),
-            "write_mergeindex": Task(MergeIndex.relation_dumper, "$mergeindex", "$merge_idx_to", "$merge_freq_idx_to"),
-            "dump": Task(MergeIndex.freq_idx_pointer_dump, "$mergeindex", "$context", "$write_mergeindex"),
-            "Ending": EndTask(end, "$dump")
+            "merge_freq_and_other_idx_to": EndTask(numpygraph.load.merge_freq_and_other_idx_to,
+                                                   "$context", "$files_hash_dict", "$files_freq_dict", "$mergeindex"),
+            # "merge_idx_to_gen": Task(numpygraph.load.merge_idx_to_gen, "$mergeindex", "$files_hash_dict"),
+            # "merge_freq_idx_to_gen": Task(numpygraph.load.merge_freq_idx_to_gen, "$mergeindex", "$files_freq_dict"),
+            # "merge_idx_to": MultiProcessTask(processpool, MergeIndex.merge_idx_to_wrapper, "$merge_idx_to_gen"),
+            # "merge_freq_idx_to": MultiProcessTask(processpool, MergeIndex.merge_freq_idx_to_wrapper,
+            #                                       "$merge_freq_idx_to_gen"),
+            # "write_mergeindex": Task(MergeIndex.relation_dumper, "$mergeindex", "$merge_idx_to", "$merge_freq_idx_to"),
+            # "dump": Task(MergeIndex.freq_idx_pointer_dump, "$mergeindex", "$context", "$write_mergeindex"),
+            # "Ending": EndTask(end, "$dump")
         }
     )(context=context)
 
