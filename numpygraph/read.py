@@ -51,14 +51,18 @@ class Read:
         From node id, to node id
         暂时当作双向边处理
         """
+        print("In func fetch_edge_attr, attempting to find edge attrs...")
         fs_id = fid & self.SHORT_HASH_MASK
         ts_id = tid & self.SHORT_HASH_MASK
+        print("fid:", fid)
+        print("tid:", tid)
         f_value_asarray = np.asarray([fs_id, fid])
         # from value as array
         # from/to short id
         adict = ArrayDict(memmap_path=f"{self.graph}/edges_mapper/hid_{fs_id}.dict.arr",
                           value_dtype=[('index', np.int64), ('length', np.int32)], memmap_mode='r')
         loc = adict[f_value_asarray]
+        print("Found edge loc at: ", loc)
         toarrconcat = np.memmap(f"{self.graph}/concat.to.arr",
                                 mode='r',
                                 order='F',

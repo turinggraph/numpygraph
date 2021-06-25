@@ -60,8 +60,8 @@ def dag_load(dataset_path, graph_path):
             "merge_freq_idx_to": MultiProcessTask(processpool, MergeIndex.merge_freq_idx_to_wrapper,
                                                   "$merge_freq_idx_to_gen"),
             "write_mergeindex": Task(MergeIndex.relation_dumper, "$mergeindex", "$merge_idx_to", "$merge_freq_idx_to"),
-            "dump": Task(MergeIndex.freq_idx_pointer_dump, "$mergeindex", "$context"),
-            "Ending": EndTask(end, "$write_mergeindex", "$dump")
+            "dump": Task(MergeIndex.freq_idx_pointer_dump, "$mergeindex", "$context", "$write_mergeindex"),
+            "Ending": EndTask(end, "$dump")
         }
     )(context=context)
 

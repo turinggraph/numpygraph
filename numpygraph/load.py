@@ -79,7 +79,7 @@ def node_hash_space_stat(context, key_sample_lines_AND_nodes_line_num,
         # 建立节点高频word集合
         if len(freqitem) > 0:
             freq_nodes[node] = set([chash(context.query_type_hash(node), item[0]) for item in freqitem])
-    return (freq_nodes, NODES_SHORT_HASH)
+    return freq_nodes, NODES_SHORT_HASH
 
 
 def linesidxarr_arg_gen(context, node_hash_space_stat_arg):
@@ -87,13 +87,14 @@ def linesidxarr_arg_gen(context, node_hash_space_stat_arg):
     freq_nodes, NODES_SHORT_HASH = node_hash_space_stat_arg
     CHUNK_COUNT = cpu_count()
     for relation in context.relation_files:
-        basename = os.path.basename(relation)
+        realtion, basename = os.path.abspath(relation), os.path.basename(relation)
         result.extend([
             (
                 f"{context.graph}/{basename}.idxarr",
                 splitfile_arguments,
                 chunk_id,
                 freq_nodes,
+                NODES_SHORT_HASH,
                 context
             )
             for chunk_id, splitfile_arguments in
@@ -102,7 +103,7 @@ def linesidxarr_arg_gen(context, node_hash_space_stat_arg):
     return result
 
 
-def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, context):
+def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_HASH, context):
     # output, (path, _from, _to), chunk = args
     with open(splitfile_arguments[0]) as f:
         FROM_COL, TO_COL = re.findall(r"\((.+?)\)", f.readline())
@@ -119,11 +120,11 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, context):
         return random.randint(300000, 600000)
 
     # 针对非高频节点使用使用短hash映射到共享空间，需要独立重排
-    from_node_lists = [ArrayList("%s/hid_%d_%s.idxarr.chunk_%d" % (output, i, FROM_COL, chunk_id),
+    from_node_lists = [ArrayList(f"{output}/hid_{i}_{FROM_COL}.idxarr.chunk_{chunk_id}",
                                  chunk_size=random_chunk_size(),
                                  dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)])
                        for i in range(FROM_SHORT_HASH)]
-    to_node_lists = [ArrayList("%s/hid_%d_%s.idxarr.chunk_%d" % (output, i, TO_COL, chunk_id),
+    to_node_lists = [ArrayList(f"{output}/hid_{i}_{TO_COL}.idxarr.chunk_{chunk_id}",
                                chunk_size=random_chunk_size(),
                                dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)])
                      for i in range(TO_SHORT_HASH)]
@@ -141,11 +142,12 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, context):
         from_node_freq_dict_set = set(from_node_freq_dict.keys())
         ffdict_able_flag = True
     if TO_COL in freq_nodes:
-        to_node_freq_dict = {tk: ArrayList("%s/hid_%s_%s.idxarr.chunk_%d" % (freq_output, str(tk), TO_COL, chunk_id),
-                                           chunk_size=random_chunk_size(),
-                                           dtype=[('to', np.int64), ('ts', np.int32)])
-                             #   dtype=[('from', np.int64), ('to', np.int64)])
-                             for tk in list(freq_nodes[TO_COL])}
+        to_node_freq_dict = {
+            tk: ArrayList("%s/hid_%s_%s.idxarr.chunk_%d" % (freq_output, str(tk), TO_COL, chunk_id),
+                          chunk_size=random_chunk_size(),
+                          dtype=[('to', np.int64), ('ts', np.int32)])
+            #   dtype=[('from', np.int64), ('to', np.int64)])
+            for tk in list(freq_nodes[TO_COL])}
         to_node_freq_dict_set = set(to_node_freq_dict.keys())
         tfdict_able_flag = True
 
@@ -351,6 +353,7 @@ def hid_idx_dict(graph, _id):
                                    ('index', np.int64),
                                    ('length', np.int32)])
         adict[freqarr['value']] = freqarr[['index', 'length']]
+    pass
 
 
 # not used

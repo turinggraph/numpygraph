@@ -92,7 +92,7 @@ class MergeIndex:
         return 1
         pass
 
-    def freq_idx_pointer_dump(self, context):
+    def freq_idx_pointer_dump(self, context, some_num):
         # 针对高频节点->边索引表的处理
         # TODO: 针对高频节点为空的异常处理
         stime = time.time()
