@@ -55,6 +55,8 @@ def clean():
     os.system(f"rm -r {dataset_path}")
     os.system(f"rm -r {graph_path}")
     os.system(f"find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete")
+    os.system("rm log/dag_test.log")
+    os.system("rm -d log")
 
 
 def test_pipeline():

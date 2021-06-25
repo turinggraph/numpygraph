@@ -9,6 +9,7 @@ import json
 import logging
 import sys
 import threading
+import os
 
 
 # logging.basicConfig(
@@ -43,6 +44,7 @@ class Logger:
     def __init__(self, *args, **kwargs):
         logger = logging.getLogger(__name__)
         logger.setLevel(level=logging.INFO)
+        os.makedirs("log", exist_ok=True)
         handler = logging.FileHandler("log/dag_test.log", mode="w")
         handler.setLevel(logging.INFO)
         formatter = logging.Formatter(
