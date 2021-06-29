@@ -1,11 +1,10 @@
 from numpygraph.tinydag.tinydag import Task, EndTask, DAG, Logger
-from numpygraph.tinydag.tinydag import MultiProcessTask
 
 import numpygraph
 import numpygraph.load
 from numpygraph.context import Context
 
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 logger = Logger()
 
@@ -15,9 +14,6 @@ def dag_load(dataset_path, graph_path):
     print(f"Dataset: {dataset_path}\nGraph: {graph_path}")
     # load context
     context = Context().load_context(dataset_path, graph_path)
-    # print(context)
-
-    processpool = ProcessPoolExecutor()
 
     def end(*args, **kwargs):
         print("ENDING...")
@@ -31,9 +27,7 @@ def dag_load(dataset_path, graph_path):
         {
             "lines_sampler": Task(numpygraph.load.lines_sampler, "$context"),
             "node_hash_space_stat": Task(numpygraph.load.node_hash_space_stat, "$context", "$lines_sampler"),
-            "lines2idxarr_arg_gen": Task(numpygraph.load.linesidxarr_arg_gen, "$context", "$node_hash_space_stat"),
-            "lines2idxarr": MultiProcessTask(processpool, numpygraph.load.lines2idxarr, "$lines2idxarr_arg_gen"),
-            "End": EndTask(end, "$lines2idxarr"),
+            "lines2idxarr": EndTask(numpygraph.load.relationship2indexarray, "$context", "$node_hash_space_stat"),
         }
     )(context=context)
 
@@ -60,9 +54,7 @@ def dag_load(dataset_path, graph_path):
     print("hid idx merge")
     hid_idx_merge = DAG(
         {
-            "gen": Task(numpygraph.load.hid_idx_dict_gen, "$graph"),
-            "hid_idx_merge_run": MultiProcessTask(processpool, numpygraph.load.hid_idx_dict, "$gen"),
-            "Ending": EndTask(end, "$hid_idx_merge_run")
+            "hid_idx_merge": EndTask(numpygraph.load.hid_idx_merge, "$graph")
         }
     )(graph=context.graph)
 
@@ -76,9 +68,7 @@ def dag_load(dataset_path, graph_path):
     print("node2indexarray")
     node2indexarray = DAG(
         {
-            "gen": Task(numpygraph.load.node2idxarr_gen, "$context"),
-            "node2idxarr": MultiProcessTask(processpool, numpygraph.load.node2idxarr, "$gen"),
-            "write": EndTask(numpygraph.load.write_context, "$context", "$node2idxarr")
+            "node2indexarray": EndTask(numpygraph.load.node2indexarray, context),
         }
     )(context=context)
 
@@ -88,10 +78,7 @@ def dag_load(dataset_path, graph_path):
     print("merge_node_index")
     merge_node_index = DAG(
         {
-            "merge_node_cursor_dict_gen": Task(numpygraph.load.merge_node_cursor_dict_gen, "$context"),
-            "merge_node_cursor_dict": MultiProcessTask(processpool, numpygraph.load.merge_node_cursor_dict,
-                                                       "$merge_node_cursor_dict_gen"),
-            "Ending": EndTask(end, "$merge_node_cursor_dict"),
+            "merge_node_index": EndTask(numpygraph.load.merge_node_index, "$context"),
         }
     )(context=context)
 

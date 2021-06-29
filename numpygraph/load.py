@@ -79,25 +79,22 @@ def node_hash_space_stat(context, key_sample_lines_AND_nodes_line_num,
     return freq_nodes, NODES_SHORT_HASH
 
 
-def linesidxarr_arg_gen(context, node_hash_space_stat_arg):
-    result = []
-    freq_nodes, NODES_SHORT_HASH = node_hash_space_stat_arg
-    CHUNK_COUNT = cpu_count()
+def relationship2indexarray(context, node_hash_space_stat_result, CHUNK_COUNT=cpu_count()):
+    freq_nodes, NODES_SHORT_HASH = node_hash_space_stat_result
+    pool = Pool(processes=CHUNK_COUNT)
+    files = []
     for relation in context.relation_files:
-        realtion, basename = os.path.abspath(relation), os.path.basename(relation)
-        result.extend([
-            (
-                f"{context.graph}/{basename}.idxarr",
-                splitfile_arguments,
-                chunk_id,
-                freq_nodes,
-                NODES_SHORT_HASH,
-                context
-            )
-            for chunk_id, splitfile_arguments in
-            enumerate(SplitFile.split(relation, num=CHUNK_COUNT, jump=1))
-        ])
-    return result
+        relation, basename = os.path.abspath(relation), os.path.basename(relation)
+        files.extend(pool.starmap(lines2idxarr,
+                                  [(f"{context.graph}/{basename}.idxarr",
+                                    splitfile_arguments,
+                                    chunk_id,
+                                    freq_nodes,
+                                    NODES_SHORT_HASH,
+                                    context)
+                                   for chunk_id, splitfile_arguments in
+                                   enumerate(SplitFile.split(relation, num=CHUNK_COUNT, jump=1))]))
+    return files
 
 
 def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_HASH, context):
@@ -184,7 +181,7 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
     if tfdict_able_flag:
         for arraylist in to_node_freq_dict.values():
             arraylist.close(merge=False)
-    return 1
+    return output
 
 
 # relationship2indexarray and its helper functions
@@ -250,10 +247,6 @@ def merge_freq_and_other_idx_to(context, files_hash_dict, files_freq_dict, merge
 # and array storing node's relationships
 # Files other than edges sort and edges mapper can be removed at this step, probably.
 
-def hid_idx_dict_gen(graph):
-    return [(graph, i) for i in range(64)]
-
-
 def hid_idx_dict(graph, _id):
     # 所有short hid为_id的节点(不区分节点类型)索引全部都放入同一个字典中
     idxarr = [np.memmap(f,
@@ -288,40 +281,20 @@ def hid_idx_dict(graph, _id):
                                    ('index', np.int64),
                                    ('length', np.int32)])
         adict[freqarr['value']] = freqarr[['index', 'length']]
-    pass
+    return idxarr, adict
+
+
+def hid_idx_merge(graph):
+    p = Pool(processes=cpu_count())
+    files = p.starmap(hid_idx_dict, [(graph, i) for i in range(64)])
+    return files
 
 
 # hid_idx_merge
 # ===================================Dividing line====================================================
 # node2indexarray
-def node2idxarr_gen(context):
-    dataset = context.dataset
-    graph = context.graph
-    CHUNK_COUNT = os.cpu_count()
-    gen = []
-    for nodefile in glob.glob(f"{dataset}/node_*.csv"):
-        nodefile, basename = os.path.abspath(nodefile), os.path.basename(nodefile)
-        node_type = basename.split('_')[1].split('.')[0]
-        gen.extend([(f"{graph}/{basename}.curarr",
-                     node_type,
-                     splitfile_arguments,
-                     chunk_id,
-                     context)
-                    for chunk_id, splitfile_arguments in
-                    enumerate(SplitFile.split(nodefile, num=CHUNK_COUNT, jump=1))])
-    return gen
 
-
-def write_context(context, node2idxarr):
-    for items in node2idxarr:
-        try:
-            context.node_attr_chunk_num[items[0]].append(items[1])
-        except:
-            context.node_attr_chunk_num[items[0]] = [items[1]]
-    return 1
-
-
-def node2idxarr(output, node_type, splitfile_arguments, chunk_id, context):
+def node2idxarr(output, splitfile_arguments, chunk_id, context):
     def random_chunk_size():
         return random.randint(300000, 600000)
 
@@ -359,8 +332,24 @@ def node2idxarr(output, node_type, splitfile_arguments, chunk_id, context):
 
     node_cursor_lists.close(merge=True)
 
-    re_value = chunk_id, len(node_cursor_lists)
-    return [node_type, re_value]
+    return chunk_id, len(node_cursor_lists)
+
+
+def node2indexarray(context, CHUNK_COUNT=cpu_count()):
+    pool = Pool(processes=CHUNK_COUNT)
+    for nodefile in glob.glob(f"{context.dataset}/node_*.csv"):
+        nodefile, basename = os.path.abspath(nodefile), os.path.basename(nodefile)
+        node_type = basename.split('_')[1].split('.')[0]
+        re_value = pool.starmap(node2idxarr,
+                                [(f"{context.graph}/{basename}.curarr",
+                                  splitfile_arguments,
+                                  chunk_id,
+                                  context)
+                                 for chunk_id, splitfile_arguments in
+                                 enumerate(SplitFile.split(nodefile, num=CHUNK_COUNT, jump=1))]
+                                )
+        context.node_attr_chunk_num[node_type] = dict(re_value)
+    return 1
 
 
 # node2indexarray
@@ -368,9 +357,6 @@ def node2idxarr(output, node_type, splitfile_arguments, chunk_id, context):
 # merge_node_index
 
 # merge node index
-def merge_node_cursor_dict_gen(context):
-    return [(context, node_type) for node_type in context.NODE_TYPE.keys()]
-
 
 def merge_node_cursor_dict(context, node_type):
     # 将每个含有节点信息的arraylist转为arraydict
@@ -399,5 +385,11 @@ def merge_node_cursor_dict(context, node_type):
     for chunk_id, ia in enumerate(idxarr):
         # using _id (as we previously did) would cause the _id in the local scope to change, not so safe
         adict[ia['nid']] = ia[['cursor', 'chunk_id', 'local_cursor']]
+
+
+def merge_node_index(context):
+    p = Pool(processes=cpu_count())
+    p.starmap(merge_node_cursor_dict, [(context, node_type) for node_type in context.NODE_TYPE.keys()])
+    return 1
 
 # merge_node_index
