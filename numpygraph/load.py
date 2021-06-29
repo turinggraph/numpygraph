@@ -1,10 +1,8 @@
 import glob
 import numpy as np
-import time
 import os
 import re
 from collections import defaultdict, Counter
-import multiprocessing
 from multiprocessing import Pool, cpu_count
 import random
 from itertools import compress
@@ -13,7 +11,6 @@ from numpygraph.lib.splitfile import SplitFile
 from numpygraph.core.arraylist import ArrayList
 from numpygraph.core.arraydict import ArrayDict
 from numpygraph.core.hash import chash
-from numpygraph.context import Context
 from numpygraph.mergeindex import MergeIndex
 from numpygraph.core.parse import Parse
 
@@ -190,25 +187,6 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
     return 1
 
 
-def relationship2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
-    key_sample_lines, nodes_line_num = lines_sampler(glob.glob(f"{dataset}/relation_*.csv"))
-    freq_nodes, NODES_SHORT_HASH = node_hash_space_stat(key_sample_lines, nodes_line_num)
-    pool = Pool(processes=CHUNK_COUNT)
-    for relation in glob.glob(f"{dataset}/relation_*.csv"):
-        relation, basename = os.path.abspath(relation), os.path.basename(relation)
-        start_time = time.time()
-        print("## Relationship to index array transforming... ##", relation)
-        pool.starmap(lines2idxarr,
-                     [(f"{graph}/{basename}.idxarr",
-                       splitfile_arguments,
-                       chunk_id,
-                       freq_nodes,
-                       NODES_SHORT_HASH)
-                      for chunk_id, splitfile_arguments in
-                      enumerate(SplitFile.split(relation, num=CHUNK_COUNT, jump=1))])
-        print("Time usage:", time.time() - start_time)
-
-
 # relationship2indexarray and its helper functions
 # ===================================Dividing line====================================================
 # merge_index_array_then_sort and its helper functions
@@ -265,61 +243,6 @@ def merge_freq_and_other_idx_to(context, files_hash_dict, files_freq_dict, merge
     return 1
 
 
-def merge_idx_to_gen(mergeindex, files_hash_dict):
-    print("gen merge_idx", flush=True)
-    return [(mergeindex,) + item for item in list(files_hash_dict.items())]
-
-
-def merge_freq_idx_to_gen(mergeindex, files_freq_dict):
-    print("gen freq_idx", flush=True)
-    return [(mergeindex,) + item for item in list(files_freq_dict.items())]
-
-
-def merge_index_array_then_sort(graph):
-    # chunk split
-    chunk_files = list(glob.glob(f"{graph}/*.idxarr/hid_*_*.idxarr.chunk*"))
-    freq_files = list(glob.glob(f"{graph}/*.idxarr/freq_edges/hid_*.chunk*"))
-    files_hash_dict = defaultdict(list)
-    files_freq_dict = defaultdict(list)
-    for cfile in chunk_files:
-        hash_id = re.findall(".*/(.+?).idxarr*", cfile)[0]
-        files_hash_dict[hash_id].append(cfile)
-    for ffile in freq_files:
-        fname = os.path.basename(ffile)
-        fid = int(fname.split('_')[1])
-        files_freq_dict[fid].append(ffile)
-
-    edges_count_sum = sum(
-        [np.memmap(f, mode='r', dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)]).shape[0]
-         for f in sum(list(files_hash_dict.values()), [])])
-    edges_count_sum += sum([np.memmap(f, mode='r', dtype=[('to', np.int64), ('ts', np.int32)]).shape[0]
-                            for f in sum(list(files_freq_dict.values()), [])])
-
-    os.makedirs(f"{graph}/edges_sort", exist_ok=True)
-    MergeIndex.edge_to_cursor = 0
-    print(f"{graph}/concat.to.arr", edges_count_sum)
-    MergeIndex.toarrconcat = np.memmap(f"{graph}/concat.to.arr",
-                                       mode='w+',
-                                       shape=(edges_count_sum,),
-                                       order='F',
-                                       dtype=[('index', np.int64), ('value', np.int64), ('ts', np.int32)])
-
-    pool = Pool(processes=cpu_count())
-    stime = time.time()
-    for items in list(files_hash_dict.items()):
-        pool.apply_async(MergeIndex.merge_idx_to,
-                         args=items,
-                         callback=MergeIndex.merge_idx_to_callback)
-    for items in list(files_freq_dict.items()):
-        pool.apply_async(MergeIndex.merge_freq_idx_to,
-                         args=items,
-                         callback=MergeIndex.merge_freq_idx_to_callback)
-    pool.close()
-    pool.join()
-    MergeIndex.freq_idx_pointer_dump(graph)
-    print(time.time() - stime)
-
-
 # merge_index_array_then_sort and its helper functions
 # ===================================Dividing line====================================================
 # hid_idx_merge
@@ -366,15 +289,6 @@ def hid_idx_dict(graph, _id):
                                    ('length', np.int32)])
         adict[freqarr['value']] = freqarr[['index', 'length']]
     pass
-
-
-# not used
-def hid_idx_merge(graph):
-    p = Pool(processes=cpu_count())
-    stime = time.time()
-    # TODO: BUG: 当样本过小时, hid连64个可能都凑不齐
-    _ = p.starmap(hid_idx_dict, [(graph, i) for i in range(64)])
-    print(time.time() - stime)
 
 
 # hid_idx_merge
@@ -449,28 +363,6 @@ def node2idxarr(output, node_type, splitfile_arguments, chunk_id, context):
     return [node_type, re_value]
 
 
-def node2indexarray(dataset, graph, CHUNK_COUNT=cpu_count()):
-    pool = Pool(processes=CHUNK_COUNT)
-    for nodefile in glob.glob(f"{dataset}/node_*.csv"):
-        nodefile, basename = os.path.abspath(nodefile), os.path.basename(nodefile)
-        print('nodefile', nodefile, "basename", basename)
-        node_type = basename.split('_')[1].split('.')[0]
-        start_time = time.time()
-        print("## Node slicing and to index array transforming... ##", nodefile)
-        re_value = pool.starmap(node2idxarr,
-                                [(f"{graph}/{basename}.curarr",
-                                  splitfile_arguments,
-                                  chunk_id)
-                                 for chunk_id, splitfile_arguments in
-                                 enumerate(SplitFile.split(nodefile, num=CHUNK_COUNT, jump=1))]
-                                )
-        Context.node_attr_chunk_num[node_type] = dict(re_value)
-        print(re_value)
-        print("Time usage:", time.time() - start_time)
-
-    print("Context.node_attr_chunk_num:", Context.node_attr_chunk_num)
-
-
 # node2indexarray
 # ===================================Dividing line====================================================
 # merge_node_index
@@ -508,71 +400,4 @@ def merge_node_cursor_dict(context, node_type):
         # using _id (as we previously did) would cause the _id in the local scope to change, not so safe
         adict[ia['nid']] = ia[['cursor', 'chunk_id', 'local_cursor']]
 
-
-def merge_node_index(graph):
-    print("### Merging node cursor to dict...")
-    p = Pool(processes=cpu_count())
-    stime = time.time()
-    p.starmap(merge_node_cursor_dict, [(graph, node_type) for node_type in Context.NODE_TYPE.keys()])
-    print(time.time() - stime)
-    print("### Merge node cursor to dict complete")
-    pass
-
-
 # merge_node_index
-# ===================================Dividing line====================================================
-# load
-def load_relationships(dataset, graph):
-    print("Relationship Index Transforming...")
-    relationship2indexarray(dataset, graph)
-    print("Index resorted to edge mergeing...")
-    merge_index_array_then_sort(graph)
-    print("Graph index merge by hashid...")
-    hid_idx_merge(graph)
-    print("Merge success")
-
-
-def load_nodes(dataset, graph):
-    print("Node to hashid transforming...")
-    node2indexarray(dataset, graph)
-    print("Node index mapping...")
-    merge_node_index(graph)
-
-
-def load(dataset, graph):
-    # Use fork instead of spawn to start processes so that all resources are inherited.
-    # "Available on Unix only. The default on Unix."  -- quote https://docs.python.org/3/library/multiprocessing.html
-    multiprocessing.set_start_method('fork')
-
-    # print with no omission
-    np.set_printoptions(threshold=np.inf)
-
-    print(f"Dataset: {dataset}\nGraph: {graph}")
-
-    stime = time.time()
-    print("T1:", stime)
-
-    Context.load_loc(dataset, graph)
-    # Prepare relations
-    Context.load_node_type_hash(f"{graph}/node_type_id.json")
-    Context.load_node_file_hash(f"{graph}/node_file_id.json")
-    Context.prepare_relations(glob.glob(f"{dataset}/relation_*.csv"))
-    Context.prepare_nodes(glob.glob(f"{dataset}/node_*.csv"))
-
-    Context.close()
-
-    print("Node attr name:\n", Context.node_attr_name)
-    print("Node attr type:\n", Context.node_attr_type)
-    print("Edge attr name:\n", Context.edge_attr_name)
-    print("Edge attr type:\n", Context.edge_attr_type)
-
-    # Process relationships
-    load_relationships(dataset, graph)
-
-    # Process nodes
-    load_nodes(dataset, graph)
-
-    etime = time.time()
-    print("Load complete")
-    print("T2:", etime)
-    print("DT:", etime - stime)

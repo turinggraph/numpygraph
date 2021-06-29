@@ -4,12 +4,8 @@ from numpygraph.tinydag.tinydag import MultiProcessTask
 import numpygraph
 import numpygraph.load
 from numpygraph.context import Context
-from numpygraph.mergeindex import MergeIndex
 
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-
-import os
-import time
 
 logger = Logger()
 
@@ -35,9 +31,7 @@ def dag_load(dataset_path, graph_path):
         {
             "lines_sampler": Task(numpygraph.load.lines_sampler, "$context"),
             "node_hash_space_stat": Task(numpygraph.load.node_hash_space_stat, "$context", "$lines_sampler"),
-            # new function in numpygraph/load.py
             "lines2idxarr_arg_gen": Task(numpygraph.load.linesidxarr_arg_gen, "$context", "$node_hash_space_stat"),
-            # function at line 105, originally invoked from around line 170
             "lines2idxarr": MultiProcessTask(processpool, numpygraph.load.lines2idxarr, "$lines2idxarr_arg_gen"),
             "End": EndTask(end, "$lines2idxarr"),
         }
@@ -56,14 +50,6 @@ def dag_load(dataset_path, graph_path):
             "mergeindex": Task(numpygraph.load.MergeIndex_gen, "$context", "$edges_count_sum"),
             "merge_freq_and_other_idx_to": EndTask(numpygraph.load.merge_freq_and_other_idx_to,
                                                    "$context", "$files_hash_dict", "$files_freq_dict", "$mergeindex"),
-            # "merge_idx_to_gen": Task(numpygraph.load.merge_idx_to_gen, "$mergeindex", "$files_hash_dict"),
-            # "merge_freq_idx_to_gen": Task(numpygraph.load.merge_freq_idx_to_gen, "$mergeindex", "$files_freq_dict"),
-            # "merge_idx_to": MultiProcessTask(processpool, MergeIndex.merge_idx_to_wrapper, "$merge_idx_to_gen"),
-            # "merge_freq_idx_to": MultiProcessTask(processpool, MergeIndex.merge_freq_idx_to_wrapper,
-            #                                       "$merge_freq_idx_to_gen"),
-            # "write_mergeindex": Task(MergeIndex.relation_dumper, "$mergeindex", "$merge_idx_to", "$merge_freq_idx_to"),
-            # "dump": Task(MergeIndex.freq_idx_pointer_dump, "$mergeindex", "$context", "$write_mergeindex"),
-            # "Ending": EndTask(end, "$dump")
         }
     )(context=context)
 
@@ -115,33 +101,3 @@ def dag_load(dataset_path, graph_path):
     print("Load finished")
 
     return context
-
-
-if __name__ == "__main__":
-    dataset_path, graph_path, node_type_cnt, node_cnt, edge_cnt = "_dataset_test_directory", "_graph", 5, 1000, 10000
-
-
-    def mock():
-        # 生成测试样本
-        from numpygraph.datasets.make_neo4j_csv import graph_generator
-        os.system(f"mkdir -p {dataset_path}")
-        graph_generator(dataset_path, node_type_cnt, node_cnt, edge_cnt)
-        os.system(f"head -2 {dataset_path}/*.csv")
-        os.system(f"wc -l {dataset_path}/*.csv")
-
-
-    def clean():
-        # Clean up
-        os.system(f"rm -r {dataset_path}")
-        os.system(f"rm -r {graph_path}")
-        os.system(f"find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete")
-
-
-    clean()
-    mock()
-    os.system(f"rm -r {graph_path}")
-    stime = time.time()
-    dag_load(dataset_path, graph_path)
-    etime = time.time()
-    print(f"Time usage:", etime - stime)
-    clean()

@@ -217,9 +217,6 @@ class Variable(object):
             return self.var
 
 
-import pdb
-
-
 class TDigraph(Digraph):
     def __init__(self, *args, **kwargs):
         super(TDigraph, self).__init__(*args, **kwargs)
