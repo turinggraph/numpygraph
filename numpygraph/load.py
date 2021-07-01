@@ -225,7 +225,7 @@ def edge_count_sum_freq(freq_files):
     return files_freq_dict
 
 
-def summing(graph, files_hash_dict, files_freq_dict):
+def summing(files_hash_dict, files_freq_dict):
     result = sum(
         [np.memmap(f, mode='r', dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)]).shape[0]
          for f in sum(list(files_hash_dict.values()), [])])
@@ -310,8 +310,9 @@ def hid_idx_dict(graph, _id, edge_mapper_files, hid_freq_path):
     return f"{graph}/edges_mapper/hid_{_id}.dict.arr"
 
 
-def hid_idx_merge(graph, FILES_edge_mapper, hid_freq_path):
+def hid_idx_merge(context, FILES_edge_mapper, hid_freq_path):
     p = Pool(processes=cpu_count())
+    graph = context.graph
     # print("FILES_edge_mapper:", FILES_edge_mapper)
     files = p.starmap(hid_idx_dict, [(graph, i, FILES_edge_mapper[i], hid_freq_path) for i in range(64)])
     return files
@@ -396,7 +397,6 @@ def node2indexarray(context, node_files, CHUNK_COUNT=cpu_count()):
 def merge_node_cursor_dict(context, node_type, node_files):
     # 将每个含有节点信息的arraylist转为arraydict
     graph = context.graph
-    idxarr_directory = f"{graph}/node_{node_type}.csv.curarr"
     data_type = [('nid', np.int64), ('cursor', np.int64), ('chunk_id', np.int64), ('local_cursor', np.int64)]
     data_type.extend(
         list(zip(context.query_node_attr_name_without_str(node_type),
