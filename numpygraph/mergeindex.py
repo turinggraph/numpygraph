@@ -90,14 +90,14 @@ class MergeIndex:
         # TODO: 针对高频节点为空的异常处理
         stime = time.time()
         print(f"Executing freq_idx_pointer_dump, starting at {stime}")
-        idxarr = np.memmap(f"{context.graph}/edges_sort/hid_freq.idx.arr",
-                           mode='w+',
-                           order='F',
-                           shape=(len(self.freq_idx_pointer),),
-                           dtype=[('value', np.int64),
-                                  ('index', np.int64),
-                                  ('length', np.int32)])
         if len(self.freq_idx_pointer) != 0:
+            idxarr = np.memmap(f"{context.graph}/edges_sort/hid_freq.idx.arr",
+                               mode='w+',
+                               order='F',
+                               shape=(len(self.freq_idx_pointer),),
+                               dtype=[('value', np.int64),
+                                      ('index', np.int64),
+                                      ('length', np.int32)])
             for idx, (value, (index, length)) in enumerate(self.freq_idx_pointer.items()):
                 idxarr[idx]['value'] = value
                 idxarr[idx]['index'] = index
