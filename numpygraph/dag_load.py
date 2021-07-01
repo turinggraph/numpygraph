@@ -28,7 +28,8 @@ def dag_load(dataset_path, graph_path):
         return single_tuple[1]
 
     # load relationships
-    print("Load relations")
+
+    # print("Load relations")
     relationship2indexarray = DAG(
         {
             "lines_sampler": Task(numpygraph.load.lines_sampler, "$FILES_relation_files"),
@@ -38,36 +39,52 @@ def dag_load(dataset_path, graph_path):
         }
     )(context=context, FILES_relation_files=context.relation_files)
 
-    with ThreadPoolExecutor(max_workers=thread_num) as pool:
-        normal_files, freq_files = relationship2indexarray.execute(pool).get()
+    # with ThreadPoolExecutor(max_workers=thread_num) as pool:
+    #     normal_files, freq_files = relationship2indexarray.execute(pool).get()
 
     # merge index array then sort
-    print("merge index array then sort")
+    # print("merge index array then sort")
     merge_index_array_then_sort = DAG(
         {
             "files_hash_dict": Task(numpygraph.load.edge_count_sum_chunk, "$FILES_normal_files"),
             "files_freq_dict": Task(numpygraph.load.edge_count_sum_freq, "$FILES_freq_files"),
-            "edges_count_sum": Task(numpygraph.load.summing, "$graph_path", "$files_hash_dict", "$files_freq_dict"),
+            "edges_count_sum": Task(numpygraph.load.summing, "$graph", "$files_hash_dict", "$files_freq_dict"),
             "mergeindex": Task(numpygraph.load.MergeIndex_gen, "$context", "$edges_count_sum"),
             "merge_freq_and_other_idx_to": EndTask(numpygraph.load.merge_freq_and_other_idx_to,
                                                    "$context", "$files_hash_dict", "$files_freq_dict", "$mergeindex"),
         }
-    )(context=context, graph_path=context.graph, FILES_normal_files=normal_files, FILES_freq_files=freq_files)
+    )(context="$context", graph="$graph", FILES_normal_files="$normal_files", FILES_freq_files="$freq_files")
 
-    with ThreadPoolExecutor(max_workers=thread_num) as pool:
-        edge_mapper_files, freq_idx_pointer_dump_path = merge_index_array_then_sort.execute(pool).get()
+    # with ThreadPoolExecutor(max_workers=thread_num) as pool:
+    #     edge_mapper_files, freq_idx_pointer_dump_path = merge_index_array_then_sort.execute(pool).get()
 
     # hid idx merge
-    print("hid idx merge")
+    # print("hid idx merge")
     hid_idx_merge = DAG(
         {
             "hid_idx_merge": EndTask(numpygraph.load.hid_idx_merge, "$graph", "$FILES_edge_mapper",
                                      "$FILES_freq_idx_dump")
         }
-    )(graph=context.graph, FILES_edge_mapper=edge_mapper_files, FILES_freq_idx_dump=freq_idx_pointer_dump_path)
+    )(graph="$graph", FILES_edge_mapper="$edge_mapper_files", FILES_freq_idx_dump="$freq_idx_pointer_dump_path")
+
+    # with ThreadPoolExecutor(max_workers=thread_num) as pool:
+    #     hid_idx_merge.execute(pool).get()
+
+    relation_loading = DAG(
+        {
+            "relationship2indexarray": relationship2indexarray,
+            "normal_files": Task(split_helper_first, "$relationship2indexarray"),
+            "freq_files": Task(split_helper_second, "$relationship2indexarray"),
+            "merge_index_array_then_sort": merge_index_array_then_sort,
+            "edge_mapper_files": Task(split_helper_first, "$merge_index_array_then_sort"),
+            "freq_idx_pointer_dump_path": Task(split_helper_second, "$merge_index_array_then_sort"),
+            "hid_idx_merge": hid_idx_merge,
+            "end": EndTask(end, "$hid_idx_merge"),
+        }
+    )(context=context, FILES_relation_files=context.relation_files, graph=context.graph)
 
     with ThreadPoolExecutor(max_workers=thread_num) as pool:
-        hid_idx_merge.execute(pool).get()
+        relation_loading.execute(pool).get()
 
     # node loading
     print("node loading")
