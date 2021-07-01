@@ -359,24 +359,32 @@ def node2idxarr(output, splitfile_arguments, chunk_id, context):
 
     node_cursor_lists.close(merge=True)
 
-    return chunk_id, len(node_cursor_lists)
+    return (chunk_id, len(node_cursor_lists)), f"{output}/hid_{NODE_COL}.curarr.chunk_{chunk_id}"
 
 
-def node2indexarray(context, CHUNK_COUNT=cpu_count()):
+def node2indexarray(context, node_files, CHUNK_COUNT=cpu_count()):
     pool = Pool(processes=CHUNK_COUNT)
-    for nodefile in glob.glob(f"{context.dataset}/node_*.csv"):
+    written_files = defaultdict(list)
+    for nodefile in node_files:
         nodefile, basename = os.path.abspath(nodefile), os.path.basename(nodefile)
         node_type = basename.split('_')[1].split('.')[0]
-        re_value = pool.starmap(node2idxarr,
-                                [(f"{context.graph}/{basename}.curarr",
-                                  splitfile_arguments,
-                                  chunk_id,
-                                  context)
-                                 for chunk_id, splitfile_arguments in
-                                 enumerate(SplitFile.split(nodefile, num=CHUNK_COUNT, jump=1))]
-                                )
+        # re_value, written_file
+        mixed = pool.starmap(node2idxarr,
+                             [(f"{context.graph}/{basename}.curarr",
+                               splitfile_arguments,
+                               chunk_id,
+                               context)
+                              for chunk_id, splitfile_arguments in
+                              enumerate(SplitFile.split(nodefile, num=CHUNK_COUNT, jump=1))]
+                             )
+        unzipped = zip(*mixed)
+        re_value = list(unzipped)[0]
+        unzipped = zip(*mixed)
+        written_file = list(unzipped)[1]
         context.node_attr_chunk_num[node_type] = dict(re_value)
-    return 1
+        written_files[node_type].extend(written_file)
+
+    return written_files
 
 
 # node2indexarray
@@ -385,7 +393,7 @@ def node2indexarray(context, CHUNK_COUNT=cpu_count()):
 
 # merge node index
 
-def merge_node_cursor_dict(context, node_type):
+def merge_node_cursor_dict(context, node_type, node_files):
     # 将每个含有节点信息的arraylist转为arraydict
     graph = context.graph
     idxarr_directory = f"{graph}/node_{node_type}.csv.curarr"
@@ -399,7 +407,7 @@ def merge_node_cursor_dict(context, node_type):
                   mode='r',
                   dtype=data_type
                   )
-        for f in glob.glob(f"{idxarr_directory}/hid_{node_type}.curarr.chunk_*")
+        for f in node_files
     ]
     nodes_cursor_sum = sum([i.shape[0] for i in idxarr])
     os.makedirs(f"{graph}/nodes_mapper", exist_ok=True)
@@ -413,10 +421,14 @@ def merge_node_cursor_dict(context, node_type):
         # using _id (as we previously did) would cause the _id in the local scope to change, not so safe
         adict[ia['nid']] = ia[['cursor', 'chunk_id', 'local_cursor']]
 
+    return f"{graph}/nodes_mapper/{node_type}.dict.arr"
 
-def merge_node_index(context):
+
+def merge_node_index(context, node_curarr_files):
     p = Pool(processes=cpu_count())
-    p.starmap(merge_node_cursor_dict, [(context, node_type) for node_type in context.NODE_TYPE.keys()])
-    return 1
+    nodes_mapper_files = p.starmap(merge_node_cursor_dict,
+                                   [(context, node_type, node_curarr_files[node_type]) for node_type in
+                                    context.NODE_TYPE.keys()])
+    return nodes_mapper_files
 
 # merge_node_index

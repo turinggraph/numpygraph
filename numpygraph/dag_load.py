@@ -93,23 +93,24 @@ def dag_load(dataset_path, graph_path):
     print("node2indexarray")
     node2indexarray = DAG(
         {
-            "node2indexarray": EndTask(numpygraph.load.node2indexarray, context),
+            "node2indexarray": EndTask(numpygraph.load.node2indexarray, context, context.node_files),
         }
     )(context=context)
 
     with ThreadPoolExecutor(max_workers=thread_num) as pool:
-        node2indexarray.execute(pool).get()
+        node_curarr_files = node2indexarray.execute(pool).get()
 
     print("merge_node_index")
     merge_node_index = DAG(
         {
-            "merge_node_index": EndTask(numpygraph.load.merge_node_index, "$context"),
+            "merge_node_index": EndTask(numpygraph.load.merge_node_index, "$context", "$node_curarr_files"),
         }
-    )(context=context)
+    )(context=context, node_curarr_files=node_curarr_files)
 
     with ThreadPoolExecutor(max_workers=thread_num) as pool:
-        merge_node_index.execute(pool).get()
+        nodes_mapper_files = merge_node_index.execute(pool).get()
 
+    print("node_mapper_files:", nodes_mapper_files)
     print("Load finished")
 
     return context
