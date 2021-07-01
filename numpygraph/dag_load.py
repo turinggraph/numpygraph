@@ -37,7 +37,7 @@ def dag_load(dataset_path, graph_path):
             "lines2idxarr": EndTask(numpygraph.load.relationship2indexarray, "$context", "$node_hash_space_stat",
                                     "$FILES_relation_files"),
         }
-    )(context=context, FILES_relation_files=context.relation_files)
+    )(context="$context", FILES_relation_files="$FILES_relation_files")
 
     # with ThreadPoolExecutor(max_workers=thread_num) as pool:
     #     normal_files, freq_files = relationship2indexarray.execute(pool).get()
