@@ -49,6 +49,8 @@ class Context:
         return self
 
     def prepare_nodes(self):
+        """Build index of all node files
+        """
         self.node_files = glob.glob(f"{self.dataset}/node_*.csv")
         for fn in self.node_files:
             # Context.count_node(fn)
@@ -58,6 +60,8 @@ class Context:
         return self
 
     def prepare_relations(self):
+        """Build index of all relation files
+        """
         self.relation_files = glob.glob(f"{self.dataset}/relation_*.csv")
         for fn in self.relation_files:
             with open(fn) as f:

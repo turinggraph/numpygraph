@@ -49,9 +49,10 @@ class ArrayList():
 
     def close(self, merge=True):
         if self.tail_cursor == 0:
-            return
+            return []
         if merge is False:
             self.flush()
+            return [f"{self.path}.{i}" for i in range(len(self.arrays))]
         else:
             self.flush()
             opt = np.memmap(self.path,
@@ -66,6 +67,7 @@ class ArrayList():
 
             for i in range(len(self.arrays)):
                 os.remove(self.path + ".%d" % i)
+            return [f"{self.path}"]
 
     def __getitem__(self, idx):
         return self.arrays[idx // self.chunk_size][idx % self.chunk_size]

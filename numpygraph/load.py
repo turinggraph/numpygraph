@@ -5,7 +5,7 @@ import re
 from collections import defaultdict, Counter
 from multiprocessing import Pool, cpu_count
 import random
-from itertools import compress
+from itertools import compress, chain
 
 from numpygraph.lib.splitfile import SplitFile
 from numpygraph.core.arraylist import ArrayList
@@ -15,10 +15,10 @@ from numpygraph.mergeindex import MergeIndex
 from numpygraph.core.parse import Parse
 
 
-def lines_sampler(context):
+def lines_sampler(relationship_files):
     """ 对图数据集做采样统计, 供后续估计hash空间使用, 提升导入效率
     """
-    relationship_files = context.relation_files
+    # relationship_files = context.relation_files
     key_sample_lines, nodes_line_num = defaultdict(list), defaultdict(int)
     for relation in relationship_files:
         relation, _ = os.path.abspath(relation), os.path.basename(relation)
@@ -79,26 +79,36 @@ def node_hash_space_stat(context, key_sample_lines_AND_nodes_line_num,
     return freq_nodes, NODES_SHORT_HASH
 
 
-def relationship2indexarray(context, node_hash_space_stat_result, CHUNK_COUNT=cpu_count()):
+def relationship2indexarray(context, node_hash_space_stat_result, relation_files, CHUNK_COUNT=cpu_count()):
     freq_nodes, NODES_SHORT_HASH = node_hash_space_stat_result
     pool = Pool(processes=CHUNK_COUNT)
-    files = []
-    for relation in context.relation_files:
+    normal_files = []
+    freq_files = []
+    for relation in relation_files:
         relation, basename = os.path.abspath(relation), os.path.basename(relation)
-        files.extend(pool.starmap(lines2idxarr,
-                                  [(f"{context.graph}/{basename}.idxarr",
-                                    splitfile_arguments,
-                                    chunk_id,
-                                    freq_nodes,
-                                    NODES_SHORT_HASH,
-                                    context)
-                                   for chunk_id, splitfile_arguments in
-                                   enumerate(SplitFile.split(relation, num=CHUNK_COUNT, jump=1))]))
-    return files
+        # normal_file, freq_file =
+        files = pool.starmap(lines2idxarr,
+                             [(f"{context.graph}/{basename}.idxarr",
+                               splitfile_arguments,
+                               chunk_id,
+                               freq_nodes,
+                               NODES_SHORT_HASH,
+                               context)
+                              for chunk_id, splitfile_arguments in
+                              enumerate(SplitFile.split(relation, num=CHUNK_COUNT, jump=1))])
+        transposed = list(zip(*files))
+        normal_files.extend(list(chain(*transposed[0])))
+        freq_files.extend(list(chain(*transposed[1])))
+        # normal_files.extend(normal_file)
+        # freq_files.extend(freq_file)
+    return normal_files, freq_files
 
 
 def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_HASH, context):
+    # writes to two types of files: freq arraylist and infrequent (normal) arraylist
     # output, (path, _from, _to), chunk = args
+    freq_files = []
+    normal_files = []
     with open(splitfile_arguments[0]) as f:
         FROM_COL, TO_COL = re.findall(r"\((.+?)\)", f.readline())
         FROM_COL_HASH, TO_COL_HASH = context.query_type_hash(FROM_COL), context.query_type_hash(TO_COL)
@@ -122,6 +132,9 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
                                chunk_size=random_chunk_size(),
                                dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)])
                      for i in range(TO_SHORT_HASH)]
+    # normal_files.extend([f"{output}/hid_{i}_{FROM_COL}.idxarr.chunk_{chunk_id}" for i in range(FROM_SHORT_HASH)])
+    # normal_files.extend([f"{output}/hid_{i}_{TO_COL}.idxarr.chunk_{chunk_id}" for i in range(TO_SHORT_HASH)])
+
     # 针对高频节点， 使用独立的空间， 不需要重排
     freq_output = f"{output}/freq_edges"
     os.makedirs(freq_output, exist_ok=True)
@@ -135,6 +148,7 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
             for fk in list(freq_nodes[FROM_COL])}
         from_node_freq_dict_set = set(from_node_freq_dict.keys())
         ffdict_able_flag = True
+        # freq_files.extend(["%s/hid_%s_%s.idxarr.chunk_%d" % (freq_output, str(fk), FROM_COL, chunk_id) for fk in list(freq_nodes[FROM_COL])])
     if TO_COL in freq_nodes:
         to_node_freq_dict = {
             tk: ArrayList("%s/hid_%s_%s.idxarr.chunk_%d" % (freq_output, str(tk), TO_COL, chunk_id),
@@ -144,6 +158,7 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
             for tk in list(freq_nodes[TO_COL])}
         to_node_freq_dict_set = set(to_node_freq_dict.keys())
         tfdict_able_flag = True
+        # freq_files.extend(["%s/hid_%s_%s.idxarr.chunk_%d" % (freq_output, str(tk), TO_COL, chunk_id) for tk infreq_nodes[TO_COL])])
 
     for line in splitfile:
         # from_str, to_str
@@ -174,21 +189,24 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
 
     # 将arraylist数据flush到磁盘中
     for arraylist in from_node_lists + to_node_lists:
-        arraylist.close(merge=False)
+        normal_files.extend(arraylist.close(merge=False))
     if ffdict_able_flag:
         for arraylist in from_node_freq_dict.values():
-            arraylist.close(merge=False)
+            freq_files.extend(arraylist.close(merge=False))
     if tfdict_able_flag:
         for arraylist in to_node_freq_dict.values():
-            arraylist.close(merge=False)
-    return output
+            freq_files.extend(arraylist.close(merge=False))
+    # print("normal_files", normal_files)
+    # print("freq_files", freq_files)
+    return [normal_files, freq_files]
 
 
 # relationship2indexarray and its helper functions
 # ===================================Dividing line====================================================
 # merge_index_array_then_sort and its helper functions
-def edge_count_sum_chunk(context):
-    chunk_files = list(glob.glob(f"{context.graph}/*.idxarr/hid_*_*.idxarr.chunk*"))
+def edge_count_sum_chunk(chunk_files):
+    # take relation files with normal nodes, returns a dict of these files
+    # chunk_files = list(glob.glob(f"{context.graph}/*.idxarr/hid_*_*.idxarr.chunk*"))
     files_hash_dict = defaultdict(list)
     for cfile in chunk_files:
         hash_id = re.findall(".*/(.+?).idxarr*", cfile)[0]
@@ -196,8 +214,9 @@ def edge_count_sum_chunk(context):
     return files_hash_dict
 
 
-def edge_count_sum_freq(context):
-    freq_files = list(glob.glob(f"{context.graph}/*.idxarr/freq_edges/hid_*.chunk*"))
+def edge_count_sum_freq(freq_files):
+    # taks relation fiels with freq nodes, returns a dict of these files
+    # freq_files = list(glob.glob(f"{context.graph}/*.idxarr/freq_edges/hid_*.chunk*"))
     files_freq_dict = defaultdict(list)
     for ffile in freq_files:
         fname = os.path.basename(ffile)
@@ -206,7 +225,7 @@ def edge_count_sum_freq(context):
     return files_freq_dict
 
 
-def summing(files_hash_dict, files_freq_dict):
+def summing(graph, files_hash_dict, files_freq_dict):
     result = sum(
         [np.memmap(f, mode='r', dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)]).shape[0]
          for f in sum(list(files_hash_dict.values()), [])])
@@ -232,12 +251,17 @@ def merge_freq_and_other_idx_to(context, files_hash_dict, files_freq_dict, merge
     pool = Pool(processes=cpu_count())
     for items in list(files_hash_dict.items()):
         pool.apply_async(mergeindex.merge_idx_to, args=items, callback=mergeindex.merge_idx_to_callback)
+
     for items in list(files_freq_dict.items()):
         pool.apply_async(mergeindex.merge_freq_idx_to, args=items, callback=mergeindex.merge_freq_idx_to_callback)
     pool.close()
     pool.join()
-    mergeindex.freq_idx_pointer_dump(context)
-    return 1
+
+    # print(mergeindex.filenames)
+
+    # edges_sort folder's contents is written here
+    freq_idx_pointer_dump_path = mergeindex.freq_idx_pointer_dump(context)
+    return mergeindex.filenames, freq_idx_pointer_dump_path
 
 
 # merge_index_array_then_sort and its helper functions
@@ -247,14 +271,17 @@ def merge_freq_and_other_idx_to(context, files_hash_dict, files_freq_dict, merge
 # and array storing node's relationships
 # Files other than edges sort and edges mapper can be removed at this step, probably.
 
-def hid_idx_dict(graph, _id):
+def hid_idx_dict(graph, _id, edge_mapper_files, hid_freq_path):
     # 所有short hid为_id的节点(不区分节点类型)索引全部都放入同一个字典中
+    # needs edges_sort/hid_*.idx.arr, edges_mapper/hid_*.dic.arr
+    # edges_sort / hid_freq.idx.arr
+    # print("edge_mapper_files:", edge_mapper_files)
     idxarr = [np.memmap(f,
                         mode='r',
                         dtype=[('value', np.int64),
                                ('index', np.int64),
                                ('length', np.int32)])
-              for f in glob.glob(f"{graph}/edges_sort/hid_%d_*.idx.arr" % _id)]
+              for f in edge_mapper_files]
 
     edges_index_count_sum = sum([i.shape[0] for i in idxarr])
     os.makedirs(f"{graph}/edges_mapper", exist_ok=True)
@@ -273,20 +300,20 @@ def hid_idx_dict(graph, _id):
         # tuples: [(item1 in first column, item1 in second column),...], which is what we want
         adict[ia['value']] = ia[['index', 'length']]
     # freq部分实际上是被重复写入到全部 hash short_dict中了
-    hid_freq_path = f"{graph}/edges_sort/hid_freq.idx.arr"
-    if os.path.exists(hid_freq_path):
+    if hid_freq_path is not None:
         freqarr = np.memmap(hid_freq_path,
                             mode='r',
                             dtype=[('value', np.int64),
                                    ('index', np.int64),
                                    ('length', np.int32)])
         adict[freqarr['value']] = freqarr[['index', 'length']]
-    return idxarr, adict
+    return f"{graph}/edges_mapper/hid_{_id}.dict.arr"
 
 
-def hid_idx_merge(graph):
+def hid_idx_merge(graph, FILES_edge_mapper, hid_freq_path):
     p = Pool(processes=cpu_count())
-    files = p.starmap(hid_idx_dict, [(graph, i) for i in range(64)])
+    # print("FILES_edge_mapper:", FILES_edge_mapper)
+    files = p.starmap(hid_idx_dict, [(graph, i, FILES_edge_mapper[i], hid_freq_path) for i in range(64)])
     return files
 
 

@@ -1,4 +1,5 @@
 import time
+from collections import defaultdict
 
 import numpy as np
 
@@ -26,6 +27,7 @@ class MergeIndex:
         self.edge_to_cursor = 0
         self.toarrconcat: np.memmap = None
         self.freq_idx_pointer = {}
+        self.filenames = defaultdict(list)
 
     def merge_idx_to(self, k, ipts):
         mems = [np.memmap(f, mode='r', dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)])
@@ -38,6 +40,7 @@ class MergeIndex:
         k, ipts, arr, _val, _idx, _len = args
         # TODO: 语意不明确
         graph = "/".join(ipts[0].split("/")[:-2])
+        # writes to graph/edges_sort/xx.idx.arr
         idxarr = np.memmap(f"{graph}/edges_sort/{k}.idx.arr",
                            mode='w+',
                            order='F',
@@ -49,13 +52,16 @@ class MergeIndex:
         idxarr['index'] = _idx + self.edge_to_cursor
         idxarr['length'] = _len
 
+        # writes to graph/concat.to.arr
         self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['value'] = arr['to']
         self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['ts'] = arr['ts']
         self.toarrconcat[self.edge_to_cursor: self.edge_to_cursor + arr.shape[0]]['index'] = arr[
             'from']
         self.edge_to_cursor += arr.shape[0]
 
-    @staticmethod
+        self.filenames[int(k.split('_')[1])].append(f"{graph}/edges_sort/{k}.idx.arr")
+        pass
+
     def merge_freq_idx_to(self, k, ipts):
         # 针对高频节点边表merge处理
         mems = [np.memmap(f, mode='r', dtype=[('to', np.int64), ('ts', np.int32)])
@@ -63,7 +69,6 @@ class MergeIndex:
         return k, mems
         pass
 
-    @staticmethod
     def merge_freq_idx_to_callback(self, args):
         # 针对高频节点边表merge处理，回调
         k, mems = args
@@ -79,23 +84,24 @@ class MergeIndex:
         pass
 
     def freq_idx_pointer_dump(self, context):
+        # unrevealled dependencies: mergeindex's freq_idx_pointer
+        # writes to edges_sort/hid_freq.idx.arr
         # 针对高频节点->边索引表的处理
         # TODO: 针对高频节点为空的异常处理
         stime = time.time()
         print(f"Executing freq_idx_pointer_dump, starting at {stime}")
+        idxarr = np.memmap(f"{context.graph}/edges_sort/hid_freq.idx.arr",
+                           mode='w+',
+                           order='F',
+                           shape=(len(self.freq_idx_pointer),),
+                           dtype=[('value', np.int64),
+                                  ('index', np.int64),
+                                  ('length', np.int32)])
         if len(self.freq_idx_pointer) != 0:
-            idxarr = np.memmap(f"{context.graph}/edges_sort/hid_freq.idx.arr",
-                               mode='w+',
-                               order='F',
-                               shape=(len(self.freq_idx_pointer),),
-                               dtype=[('value', np.int64),
-                                      ('index', np.int64),
-                                      ('length', np.int32)])
-
             for idx, (value, (index, length)) in enumerate(self.freq_idx_pointer.items()):
                 idxarr[idx]['value'] = value
                 idxarr[idx]['index'] = index
                 idxarr[idx]['length'] = length
         etime = time.time()
         print(f"Finished freq_idx_pointer_dump, ends at {etime}")
-        return 1
+        return f"{context.graph}/edges_sort/hid_freq.idx.arr" if len(self.freq_idx_pointer) != 0 else None
