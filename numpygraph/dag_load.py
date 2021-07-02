@@ -21,11 +21,8 @@ def dag_load(dataset_path, graph_path):
         print("**kwargs", **kwargs)
         return 0
 
-    def split_helper_first(single_tuple):
-        return single_tuple[0]
-
-    def split_helper_second(single_tuple):
-        return single_tuple[1]
+    def split_helper(single_tuple, part):
+        return single_tuple[part]
 
     # relationships loading
 
@@ -52,11 +49,11 @@ def dag_load(dataset_path, graph_path):
     relation_loading = DAG(
         {
             "relationship2indexarray": relationship2indexarray,
-            "normal_files": Task(split_helper_first, "$relationship2indexarray"),
-            "freq_files": Task(split_helper_second, "$relationship2indexarray"),
+            "normal_files": Task(split_helper, "$relationship2indexarray", 0),
+            "freq_files": Task(split_helper, "$relationship2indexarray", 1),
             "merge_index_array_then_sort": merge_index_array_then_sort,
-            "edge_mapper_files": Task(split_helper_first, "$merge_index_array_then_sort"),
-            "freq_idx_pointer_dump_path": Task(split_helper_second, "$merge_index_array_then_sort"),
+            "edge_mapper_files": Task(split_helper, "$merge_index_array_then_sort", 0),
+            "freq_idx_pointer_dump_path": Task(split_helper, "$merge_index_array_then_sort", 1),
             "hid_idx_merge": EndTask(numpygraph.load.hid_idx_merge, "$context", "$edge_mapper_files",
                                      "$freq_idx_pointer_dump_path"),
         }
