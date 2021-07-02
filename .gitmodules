@@ -1,0 +1,3 @@
+[submodule "tinydag"]
+	path = tinydag
+	url = git@github.com:turinggraph/tinydag.git

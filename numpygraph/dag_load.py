@@ -1,4 +1,4 @@
-from numpygraph.tinydag.tinydag import Task, EndTask, DAG, Logger
+from tinydag.src.tinydag import Task, EndTask, DAG, Logger
 
 import numpygraph
 import numpygraph.load
