@@ -16,11 +16,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository and submodules
+    - name: Checkout repository
       uses: actions/checkout@v2
-      with:
-        token: ${{ secrets.GIT_SUBMODULES_CLONE }}
-        submodules: recursive
+    - name: clone submodule tinydag
+      env:
+        SSH_KEY_FOR_SUBMODULE: ${{secrets.CLONE_FROM_TINYDAG_SSH_PRIVATE_KEY}}
+      run:
+        mkdir $HOME/.ssh && echo "$SSH_KEY_FOR_SUBMODULE" > $HOME/.ssh/tinydag_deploy && chmod 600 $HOME/.ssh/tinydag_deploy && git submodule update --init --recursive
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
