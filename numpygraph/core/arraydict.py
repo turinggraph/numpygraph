@@ -51,16 +51,6 @@ class ArrayDict():
         # 在HEAP最尾部的三个值约定为(chain_cursor, item_size, HASH_HEAP_SIZE)
         # 如果不给item_size, 说明是读模式
         self.item_get_cursor = item_get_cursor
-        # Critical problem here.
-        # This is what we previously did:
-        # if item_size is None:
-        #     read self.HEAP
-        #     set item_size to size of self.HEAP (something not None)
-        # Do something else
-        # if item_size is not None:
-        #     set self.HEAP to an empty memmap
-        #
-        # Quite obviously, we can never read any ArrayDict from the disk this way
         is_New = item_size is not None
         if not is_New:
             self.HEAP = np.memmap(filename=memmap_path,

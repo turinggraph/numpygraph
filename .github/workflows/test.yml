@@ -4,9 +4,9 @@
 name: test
 on:
   push:
-    branches: [ main, huangpu, hanryxu, hanryxu-re, node-loading]
+    branches: [ main, huangpu, hanryxu, hanryxu-re, node-loading, dagged]
   pull_request:
-    branches: [ main, huangpu, hanryxu, hanryxu-re, node-loading]
+    branches: [ main, huangpu, hanryxu, hanryxu-re, node-loading, dagged]
   workflow_dispatch:
 
 jobs:
@@ -23,6 +23,7 @@ jobs:
         python-version: 3.9
     - name: Install dependencies
       run: |
+        sudo apt install graphviz
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi

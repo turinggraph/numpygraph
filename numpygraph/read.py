@@ -1,24 +1,24 @@
 import numpy as np
 
 from numpygraph.core.arraydict import ArrayDict
-from numpygraph.context import Context
 from numpygraph.core.hash import chash
 
 
 class Read:
-    def __init__(self, dataset_loc, graph_loc):
+    def __init__(self, dataset_loc, graph_loc, context):
         self.SHORT_HASH_MASK = (1 << 6) - 1
         self.graph = graph_loc
         self.dataset = dataset_loc
+        self.context = context
 
     def fetch_node_id(self, node_type, node_value):
-        node_type_hash = Context.query_type_hash(node_type)
+        node_type_hash = self.context.query_type_hash(node_type)
         node_hash = chash(node_type_hash, node_value)
         return node_hash
 
     def fetch_node_attr(self, _id):
         node_id = _id
-        node_type = Context.parse_node_type(node_id)
+        node_type = self.context.parse_node_type(node_id)
         adict = ArrayDict(memmap_path=f"{self.graph}/nodes_mapper/{node_type}.dict.arr",
                           value_dtype=[('cursor', np.int64), ('chunk_id', np.int64), ('local_cursor', np.int64)],
                           memmap_mode='r')
@@ -29,21 +29,13 @@ class Read:
         local_cursor = cursors[0][2]
         data_type = [('nid', np.int64), ('cursor', np.int64), ('chunk_id', np.int64), ('local_cursor', np.int64)]
         data_type.extend(
-            list(zip(Context.query_node_attr_name_without_str(node_type),
-                     Context.query_node_attr_type_without_str(node_type)))
+            list(zip(self.context.query_node_attr_name_without_str(node_type),
+                     self.context.query_node_attr_type_without_str(node_type)))
         )
         alist = np.memmap(filename=f"{self.graph}/node_{node_type}.csv.curarr/hid_{node_type}.curarr.chunk_{chunk_id}",
                           dtype=data_type
                           )
         return alist[local_cursor]
-        # with open(f"{self.dataset}/node_{node_type}.csv") as f:
-        #     try:
-        #         f.seek(cursor)
-        #         node_info = f.readline()
-        #         if self.fetch_node_id(node_type, node_info.split(',')[0]) == node_id:
-        #             return node_info.strip('\n')
-        #     except ValueError:
-        #         pass
 
     def fetch_edge_attr(self, fid, tid):
         """
