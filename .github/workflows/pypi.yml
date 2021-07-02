@@ -1,9 +1,9 @@
 name: pypi
 on:
   push:
-    branches: [ main, huangpu, hanryxu, hanryxu-re]
+    branches: [ main, huangpu]
   pull_request:
-    branches: [ main, huangpu, hanryxu, hanryxu-re]
+    branches: [ main, huangpu]
 
 jobs:
   build:

@@ -4,9 +4,9 @@
 name: test
 on:
   push:
-    branches: [ main, huangpu, hanryxu, hanryxu-re, node-loading, dagged]
+    branches: [ main, huangpu]
   pull_request:
-    branches: [ main, huangpu, hanryxu, hanryxu-re, node-loading, dagged]
+    branches: [ main, huangpu]
   workflow_dispatch:
 
 jobs:
