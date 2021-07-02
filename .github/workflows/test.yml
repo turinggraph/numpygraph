@@ -19,6 +19,7 @@ jobs:
     - name: Checkout repository and submodules
       uses: actions/checkout@v2
       with:
+        token: ${{ secrets.GIT_SUBMODULES_CLONE }}
         submodules: recursive
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
