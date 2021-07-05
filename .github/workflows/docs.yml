@@ -13,6 +13,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: clone submodule tinydag
+      env:
+        SSH_KEY_FOR_SUBMODULE: ${{secrets.CLONE_FROM_TINYDAG_SSH_PRIVATE_KEY}}
+      run:
+        mkdir $HOME/.ssh && echo "$SSH_KEY_FOR_SUBMODULE" > $HOME/.ssh/id_rsa && chmod 600 $HOME/.ssh/id_rsa && git submodule update --init --recursive
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:

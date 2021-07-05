@@ -39,8 +39,10 @@ def split_helper(single_tuple, part):
     :type single_tuple: any subscriptable object
     :param single_tuple: the mixed tuple
 
-    :param part: int
-    :return: the serial number of the desired part of the tuple to return
+    :type part: int
+    :param part: the index number
+
+    :return: the desired part of the tuple
     """
     return single_tuple[part]
 
