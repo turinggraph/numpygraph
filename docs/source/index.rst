@@ -1,8 +1,3 @@
-.. numpygraph documentation master file, created by
-   sphinx-quickstart on Mon Mar 29 18:20:04 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to numpygraph's documentation!
 ======================================
 
@@ -10,20 +5,7 @@ Welcome to numpygraph's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
-
-
-   
-
-.. toctree::
-   :maxdepth: 3
-   :caption: API
- 
-   numpygraph
-
-.. .. automodule:: numpygraph
-..    :members:
-
+   modules
 
 Indices and tables
 ==================

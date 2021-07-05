@@ -9,20 +9,72 @@ from concurrent.futures import ThreadPoolExecutor
 logger = Logger()
 
 
+def end(*args, **kwargs):
+    """
+    Workaround function to put into EndTask.
+
+    This function can be put into EndTask, taking several return values of previous Tasks so that the enclosing DAG
+    would wait for all Tasks to end.
+
+    :type args: any
+    :param args: any return value of previous Tasks
+
+    :type args: any
+    :param kwargs: any return value of previous Tasks
+
+    :return: always 0
+    """
+    print("ENDING...")
+    print("*args:", *args)
+    print("**kwargs", **kwargs)
+    return 0
+
+
+def split_helper(single_tuple, part):
+    """
+    Workaround function to split return values of Task.
+
+    This function can be put into Task, returning the "part"'s element of the single_tuple that might be a mixed large tuple of several return values.
+
+    :type single_tuple: any subscriptable object
+    :param single_tuple: the mixed tuple
+
+    :param part: int
+    :return: the serial number of the desired part of the tuple to return
+    """
+    return single_tuple[part]
+
+
 def dag_load(dataset_path, graph_path):
+    """
+    Loads the whole graph.
+
+    This function wraps all loading functions inside a DAG (please refer to tinydag) containing individual load functions as tasks. File dependency of the tasks are solved by passing file lists between tasks and each task only fetching files they intend to read from arguments passed in.
+
+    Internal details:
+    There are three DAGs for relation loading and one DAG for node loading:
+
+    * Relation loading:
+        * ``relationship2indexarray``
+        * ``merge_index_array_then_sort``
+        * ``relation_loading`` that nests the previous two
+    * Node loading:
+        * ``node_loading``
+
+    With all dependencies expressed in arguments that each Task takes and return values of the Tasks, the DAGs can be safely put together into the last DAG ``loading``.
+
+    :type dataset_path: str
+    :param dataset_path: path to dataset of relations and nodes.
+
+    :type graph_path: str
+    :param graph_path: path to the target directory where all intermediate result and dump files to be stored.
+
+    :return: object :class:`numpygraph.context.Context` after import, containing info about node type hash, dataset_path, graph_path, etc.
+    """
     thread_num = 32
     print(f"Dataset: {dataset_path}\nGraph: {graph_path}")
     # load context
     context = Context().load_context(dataset_path, graph_path)
-
-    def end(*args, **kwargs):
-        print("ENDING...")
-        print("*args:", *args)
-        print("**kwargs", **kwargs)
-        return 0
-
-    def split_helper(single_tuple, part):
-        return single_tuple[part]
 
     # relationships loading
 
