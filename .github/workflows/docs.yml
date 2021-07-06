@@ -29,7 +29,7 @@ jobs:
     - name: sphinx-apidoc
       run: |
         cd docs
-#        sphinx-apidoc -o source ../numpygraph -f & make html
+        # sphinx-apidoc -o source ../numpygraph -f & make html
         make html
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
