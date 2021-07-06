@@ -5,8 +5,10 @@ import numpy as np
 
 
 def merge_mem_array(mems):
-    """ 合并 memmap
     """
+    Helper function that merges a list of np.array into one np.array. Used to merge memmaps in MergeIndex.
+    """
+    # 合并 memmap
     assert len(mems) > 0
     arr = np.zeros(shape=(sum([m.shape[0] for m in mems]),), dtype=mems[0].dtype)
     cur = 0
@@ -17,6 +19,9 @@ def merge_mem_array(mems):
 
 
 def unique_inplace(arr, unique=None, order=None, axis=0, kind='mergesort'):
+    """
+    Helper function that sorts and extracts unique items from a list.
+    """
     # memmap sort inplaced then unique index & counts return
     arr.sort(order=order, axis=axis, kind=kind)
     return np.unique(arr[unique], return_index=True, return_counts=True)

@@ -1,4 +1,3 @@
-import glob
 import numpy as np
 import os
 import re
@@ -16,7 +15,9 @@ from numpygraph.core.parse import Parse
 
 
 def lines_sampler(relationship_files):
-    """ 对图数据集做采样统计, 供后续估计hash空间使用, 提升导入效率
+    """
+    Sample relation files for the following hashing
+    对图数据集做采样统计, 供后续估计hash空间使用, 提升导入效率
     """
     # relationship_files = context.relation_files
     key_sample_lines, nodes_line_num = defaultdict(list), defaultdict(int)

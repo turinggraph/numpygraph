@@ -9,6 +9,9 @@ dataset_path, graph_path, node_type_cnt, node_cnt, edge_cnt = "_dataset_test_dir
 
 
 def mock():
+    """
+    Generate node files and relationship files.
+    """
     # 生成测试样本
     os.system(f"mkdir -p {dataset_path}")
     graph_generator(dataset_path, node_type_cnt, node_cnt, edge_cnt)
@@ -17,11 +20,38 @@ def mock():
 
 
 def dump():
+    """
+    Step that load all nodes and relations.
+
+    :return: context after all loading process
+    """
     # LOAD: dataset -> graph
     return dag_load(dataset_path, graph_path)
 
 
 def sample(context):
+    """
+    Step that attempts to read from numpygraph database.
+
+    If everything is working, this function should print:
+        * "Edge:" a random relation
+        * "Sample Node Type:" a first node from the relation
+        * "Sample Node ID:"  node id (node hash) of this node
+        * "Another Node Type:" the other node from the relation (the second node)
+        * "Another Node ID:" node id of the other node
+        * "Node Attr:" attributes of the first node (excluding strs)
+        * "Neighbor nodes:" neighbor nodes of the first node
+        * "Neighbor nodes' attrs:" attribute of the neighbor nodes
+        * "Edge Attr:" find the attribute of the edge between the two previous nodes
+        * "Neighbor Edges:" edges incident to the first node
+        * "Randomly selected edges around a certain node:" ... around the first node
+        * "Sample nodes with degree:": starting from the first node; do a depth search of depth 3, limiting the number of nodes in each level to be 4; print all nodes traveled in the depth tree
+
+    :type context: :class:`numpygraph.context.Context`
+    :param context: context returned from dump() function
+
+    :return: no return value
+    """
     # READ: graph
     read = Read(dataset_path, graph_path, context)
     # Sample node, id
@@ -51,6 +81,9 @@ def sample(context):
 
 
 def clean():
+    """
+    Clean up all files generated (include relation files, node files, and log files (from tinydag))
+    """
     # Clean up
     os.system(f"rm -r {dataset_path}")
     os.system(f"rm -r {graph_path}")
@@ -60,6 +93,9 @@ def clean():
 
 
 def test_pipeline():
+    """
+    Test pipeline for numpygraph
+    """
     clean()
     mock()
     context = dump()

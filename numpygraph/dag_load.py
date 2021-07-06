@@ -57,7 +57,8 @@ def dag_load(dataset_path, graph_path):
     There are three DAGs for relation loading and one DAG for node loading:
 
     * Relation loading:
-        * ``relationship2indexarray``
+        * ``relationship2indexarray``:
+            * :func:`numpygraph.load.lines_sampler`
         * ``merge_index_array_then_sort``
         * ``relation_loading`` that nests the previous two
     * Node loading:

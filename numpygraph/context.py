@@ -4,13 +4,32 @@ import re
 import numpy as np
 from itertools import compress
 import glob
-import pickle
-# from pydoc import locate
 
 from numpygraph.core.parse import Parse
 
 
 class Context:
+    """
+    Context class that stores information required through the loading process. Information stored inside includes:
+     * dataset: path to the dataset folder where all node and relation files lies
+     * graph: path to the graph folder where all intermediate result rests
+     * relation_files: list of relation files in the dataset folder
+     * node_files: list of node files in the dataset folder (this and relation_files are for solving file dependencies)
+     * NODE_TYPE: dict of node types to their hash values
+     * NODE_FILE: dict of node files to hash values
+     * HASH_NODE_TYPE: dict of hash values of node types to node types
+     * HASH_SHORT_NODE_TYPE: dict of short hash values of node types to node typescript
+     * HASH_NODE_FILE: dict of hash values of node files to node files
+     * node_attr_type: dict of node type to their attributes' types
+     * node_attr_type_without_str: dict of node type to their attributes' type, without str type, which cannot be put into :class:`numpygraph.core.arraylist` or :class:`numpygraph.core.arraydict`. We would record file pointers to str type.
+     * node_attr_name and node_attr_name_without_str: dict of node type to their attributes' names, str excluded in the latter for the same reason as above.
+     * valid_attrs: dict of node type to list of attributes's types they own
+     * edge_attr_type, edge_attr_name: similar as those of nodes'
+     * node_type_path, node_file_path: file path to json file that stores NODE_TYPE and NODE_FILE for next time's loading
+     * closed: mark the end of context loading process
+     * node_attr_chunk_num, node_csv_chunk_num: not used yet
+    """
+
     def __init__(self):
         self.dataset = ""
         self.graph = ""
@@ -40,6 +59,16 @@ class Context:
         return self
 
     def load_context(self, dataset_path, graph_path):
+        """
+        Function that loads context (and closes it after finished).
+
+        :type dataset_path: str
+        :param dataset_path: path to dataset of node csv files and relation csv files
+        :type graph_path: str
+        :param graph_path: path to intermediate result path
+
+        :return: self
+        """
         self.load_loc(dataset_path, graph_path)
         self.load_node_type_hash()
         self.load_node_file_hash()
@@ -86,6 +115,14 @@ class Context:
         return self
 
     def node_type_hash(self, col):
+        """
+        Return hash value of given node type.
+
+        :type col: str
+        :param col: node type
+
+        :return: the corresponding hash value
+        """
         if self.closed:
             raise Exception("Please use query_type_hash to fetch hash value")
         if col in self.NODE_TYPE:
@@ -132,6 +169,11 @@ class Context:
         pass
 
     def load_node_type_hash(self):
+        """
+        Load node type from previously stored json file (probably comming from a previous session).
+
+        :return: self
+        """
         self.node_type_path = f"{self.graph}/node_type_id.json"
         if not os.path.exists(self.node_type_path):
             os.makedirs(os.path.dirname(self.node_type_path), exist_ok=True)
@@ -141,6 +183,11 @@ class Context:
         return self
 
     def load_node_file_hash(self):
+        """
+        Load node files from previous json file
+
+        :return: self
+        """
         self.node_file_path = f"{self.graph}/node_file_id.json"
         if not os.path.exists(self.node_file_path):
             os.makedirs(os.path.dirname(self.node_file_path), exist_ok=True)
@@ -150,7 +197,11 @@ class Context:
         return self
 
     def close(self):
-        # Denote that writing to Context is done, no more further changed to Context will be applied.
+        """
+        Denote that writing to Context is done, no more further changed to Context will be applied.
+
+        :return: self
+        """
         for (node_type, hash_value) in self.NODE_TYPE.items():
             self.HASH_NODE_TYPE[hash_value] = node_type
             self.HASH_SHORT_NODE_TYPE[hash_value >> 60] = node_type

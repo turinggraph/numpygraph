@@ -2,7 +2,8 @@ import numpy as np
 
 
 class HashSplitDict():
-    """分块字典集中管理
+    """
+    Organize split dictionaries, currently not used
     """
 
     def __init__(self, path, dtype=np.int32, hlen=64):
@@ -35,18 +36,30 @@ class HashSplitDict():
         return ret
 
 
-class ArrayDict():
-    """基于numpy memmap 实现的字典
+class ArrayDict:
     """
-    WITHOUT_NEXT_MAGIC = -1
-    CONFIG_CHAIN_CURSOR = -1
-    CONFIG_ITEM_SIZE = -2
-    CONFIG_HASH_HEAP_SIZE = -3
-    # Just for convenience, store the file_path here
-    file_path = ""
+    Dictionary based on numpy memmap.
+
+    The dictionary will be mapped in a file on dish while can be used as a normal dict after providing the correct memmap_path in :func:`numpygraph.core.arraydict.__init__`. Either create an object of ArrayDict when writing to file or when reading from file.
+
+    :type item_size: int
+    :param item_size: intended size of dict, only specify when creating an ArrayDict object
+    :type memmap: boolean
+    :param memmap: whether to memmap the dict to file on disk
+    :type memmap_path: str
+    :param memmap_path: path to memmaped file
+    :type memmap_mode: str
+    :param memmap_mode: read from or write to file on disk
+    :type value_dtype: dtype
+    :param value_dtype: type of data mapped to file, need to specify on both write and read
+    """
 
     def __init__(self, item_size=None, hash_heap_rate=0.5, memmap=False, memmap_path=None,
                  memmap_mode='r+', value_dtype=np.int32, item_get_cursor=False):
+        self.WITHOUT_NEXT_MAGIC = -1
+        self.CONFIG_CHAIN_CURSOR = -1
+        self.CONFIG_ITEM_SIZE = -2
+        self.CONFIG_HASH_HEAP_SIZE = -3
         self.file_path = memmap_path
         # 在HEAP最尾部的三个值约定为(chain_cursor, item_size, HASH_HEAP_SIZE)
         # 如果不给item_size, 说明是读模式
@@ -96,7 +109,7 @@ class ArrayDict():
         # 解决batch insert hash冲突问题, 强制将有冲突的hash分成多个batch插入
         while len(expect_cursor) != 0:
             _, current_index = np.unique(expect_cursor, return_index=True)
-            self.set_value(expect_cursor[current_index], key[current_index], value[current_index])
+            self.__set_value(expect_cursor[current_index], key[current_index], value[current_index])
             expect_cursor = np.delete(expect_cursor, current_index)
             key = np.delete(key, current_index)
             value = np.delete(value, current_index)
@@ -105,9 +118,9 @@ class ArrayDict():
     def __getitem__(self, key):
         # expect_cursor = (key % self.HASH_HEAP_SIZE)
         expect_cursor = (key // self.SCALE) + self.ZERO_BIAS
-        return self.get_value(expect_cursor, key)
+        return self.__get_value(expect_cursor, key)
 
-    def get_value(self, cursor, key):
+    def __get_value(self, cursor, key):
         ret = np.zeros_like(key, dtype=self.value_dtype)
         if self.item_get_cursor:
             ret_cursor = np.zeros_like(key, dtype=np.int32)
@@ -135,16 +148,16 @@ class ArrayDict():
         if len(next_access_idx) > 0:
             if self.item_get_cursor:
                 ret[next_access_idx], ret_cursor[next_access_idx] = \
-                    self.get_value(cursor_next[next_access_idx], key[next_access_idx])
+                    self.__get_value(cursor_next[next_access_idx], key[next_access_idx])
             else:
-                ret[next_access_idx] = self.get_value(cursor_next[next_access_idx], key[next_access_idx])
+                ret[next_access_idx] = self.__get_value(cursor_next[next_access_idx], key[next_access_idx])
 
         if self.item_get_cursor:
             return ret, ret_cursor
 
         return ret
 
-    def set_value(self, cursor, key, value):
+    def __set_value(self, cursor, key, value):
         """ 插入存在链表的新增关系， 这部分要保证 cursor 不允许重复
         """
         heap = self.HEAP[cursor]
@@ -176,5 +189,5 @@ class ArrayDict():
             self.HEAP[self.CONFIG_CHAIN_CURSOR][0] += len(next_new_idx)
         #
         if len(next_access_idx) > 0:
-            self.set_value(cursor_next[next_access_idx], key[next_access_idx], value[next_access_idx])
+            self.__set_value(cursor_next[next_access_idx], key[next_access_idx], value[next_access_idx])
         return True
