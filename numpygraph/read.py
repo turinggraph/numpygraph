@@ -12,12 +12,17 @@ class Read:
         self.context = context
 
     def fetch_node_id(self, node_type, node_value):
+        """
+        Return node_id (hash of node value) based on node value
+        """
         node_type_hash = self.context.query_type_hash(node_type)
         node_hash = chash(node_type_hash, node_value)
         return node_hash
 
-    def fetch_node_attr(self, _id):
-        node_id = _id
+    def fetch_node_attr(self, node_id):
+        """
+        Return node attribute given node_id
+        """
         node_type = self.context.parse_node_type(node_id)
         adict = ArrayDict(memmap_path=f"{self.graph}/nodes_mapper/{node_type}.dict.arr",
                           value_dtype=[('cursor', np.int64), ('chunk_id', np.int64), ('local_cursor', np.int64)],
@@ -39,9 +44,11 @@ class Read:
 
     def fetch_edge_attr(self, fid, tid):
         """
-        From node id, to node id
-        暂时当作双向边处理
+        Given from node id, to node id, return all edges attribute connecting the two nodes.
+
+        Treat all edges as two-way edges.
         """
+        # 暂时当作双向边处理
         fs_id = fid & self.SHORT_HASH_MASK
         ts_id = tid & self.SHORT_HASH_MASK
         f_value_asarray = np.asarray([fs_id, fid])
@@ -62,6 +69,9 @@ class Read:
         return edges
 
     def fetch_node_neibor_nodes(self, _id):
+        """
+        Return all neighbor nodes given a node's id
+        """
         neighbor_edges = self.fetch_node_neibor_edges(_id)
         neighbor_nodes = []
         for edge in neighbor_edges:
@@ -69,6 +79,9 @@ class Read:
         return neighbor_nodes
 
     def fetch_node_neibor_edges(self, _id):
+        """
+        Return all edges incident to the given node
+        """
         node_id = _id
         node_short_id = node_id & self.SHORT_HASH_MASK
         f_value_asarray = np.asarray([node_short_id, node_id])
@@ -85,6 +98,9 @@ class Read:
         return edges
 
     def sample_node_with_degree(self, _id, degrees=None):
+        """
+        Given a node and degree to take in each step, do a three-level depth search that includes at most `degrees` number of nodes in each level then return all nodes traversed.
+        """
         if degrees is None:
             degrees = [4, 4, 4]
         nodes, edges = set(), set()
@@ -101,6 +117,12 @@ class Read:
         return nodes, edges
 
     def random_sample_nodes(self, _id, size=0):
+        """
+        Given a node id, return `size` random edges incident to the node as well as the nodes at the other side of the edges.
+
+        :type size: int
+        :param size: number of nodes (and corresponding edges) to return
+        """
         selected_edges = self.fetch_node_neibor_edges(_id)[0:size]
         selected_nodes = []
         for edge in selected_edges:
