@@ -1,4 +1,3 @@
-import glob
 import numpy as np
 import os
 import re
@@ -16,8 +15,10 @@ from numpygraph.core.parse import Parse
 
 
 def lines_sampler(relationship_files):
-    """ 对图数据集做采样统计, 供后续估计hash空间使用, 提升导入效率
     """
+    Sample relation files for the following split and dump steps.
+    """
+    # 对图数据集做采样统计, 供后续估计hash空间使用, 提升导入效率
     # relationship_files = context.relation_files
     key_sample_lines, nodes_line_num = defaultdict(list), defaultdict(int)
     for relation in relationship_files:
@@ -56,8 +57,10 @@ def node_hash_space_stat(context, key_sample_lines_AND_nodes_line_num,
                          HID_BATCH_SIZE_AVERAGE=int(5e6),
                          FREQ_WORDS_TOP_KEEP=10,
                          FREQ_WORDS_TOP_RATIO=0.01):
-    """ 根据数据集的分布情况自动切分hash空间和高频节点列表
     """
+    Find all freq nodes in the relation files and build an index
+    """
+    # 根据数据集的分布情况自动切分hash空间和高频节点列表
     key_sample_lines, nodes_line_num = key_sample_lines_AND_nodes_line_num
     NODES_SHORT_HASH, freq_nodes = {}, {}
     for node, l in nodes_line_num.items():
@@ -80,6 +83,18 @@ def node_hash_space_stat(context, key_sample_lines_AND_nodes_line_num,
 
 
 def relationship2indexarray(context, node_hash_space_stat_result, relation_files, CHUNK_COUNT=cpu_count()):
+    """
+    Split relation files, passing the split parts to :func:`numpygraph.load.lines2idxarr` to utilize multiprocessing. This is a function distributing jobs.
+
+    :type context: Context
+    :param context: context object we always read from
+    :param node_hash_space_stat_result: result from :func:`numpygraph.load.node_hash_space_stat`
+    :type relation_files: list of str
+    :param relation_files: list of relation files in the dataset folder (also available in `context`, but we need to expose all file dependencies to avoid unwanted concurrent read/write.
+    :type CHUNK_COUNT: int
+    :param CHUNK_COUNT: desired number of chunk that relation files to split into
+    :return: a tuple of two lists: list of dump files for infrequent nodes and list of dump files for frequent nodes
+    """
     freq_nodes, NODES_SHORT_HASH = node_hash_space_stat_result
     pool = Pool(processes=CHUNK_COUNT)
     normal_files = []
@@ -105,6 +120,17 @@ def relationship2indexarray(context, node_hash_space_stat_result, relation_files
 
 
 def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_HASH, context):
+    """
+    Processes jobs given out by :func:`numpygraph.load.relationship2indexarray`, reading slices of relationship files, classifying relations by node's frequency and hash values of relationship ids.
+
+    :param output: output location of arraylists of node mapping to edges
+    :param splitfile_arguments: file pointer to the splitfile
+    :param chunk_id: the numbering of the portion of splitile in the original file
+    :param freq_nodes: a list of freq nodes
+    :param NODES_SHORT_HASH: module applied to nodes that mapping nodes' hash value to [0, NODES_SHORT_HASH)
+    :param context: context
+    :return: a list of file paths `[normal_files, freq_files]` of all files written to disk (still for solving file dependencies)
+    """
     # writes to two types of files: freq arraylist and infrequent (normal) arraylist
     # output, (path, _from, _to), chunk = args
     freq_files = []
@@ -149,6 +175,7 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
         from_node_freq_dict_set = set(from_node_freq_dict.keys())
         ffdict_able_flag = True
         # freq_files.extend(["%s/hid_%s_%s.idxarr.chunk_%d" % (freq_output, str(fk), FROM_COL, chunk_id) for fk in list(freq_nodes[FROM_COL])])
+
     if TO_COL in freq_nodes:
         to_node_freq_dict = {
             tk: ArrayList("%s/hid_%s_%s.idxarr.chunk_%d" % (freq_output, str(tk), TO_COL, chunk_id),
@@ -205,7 +232,9 @@ def lines2idxarr(output, splitfile_arguments, chunk_id, freq_nodes, NODES_SHORT_
 # ===================================Dividing line====================================================
 # merge_index_array_then_sort and its helper functions
 def edge_count_sum_chunk(chunk_files):
-    # take relation files with normal nodes, returns a dict of these files
+    """
+    Take relation files with normal nodes, returns a dict of these files
+    """
     # chunk_files = list(glob.glob(f"{context.graph}/*.idxarr/hid_*_*.idxarr.chunk*"))
     files_hash_dict = defaultdict(list)
     for cfile in chunk_files:
@@ -215,7 +244,9 @@ def edge_count_sum_chunk(chunk_files):
 
 
 def edge_count_sum_freq(freq_files):
-    # taks relation fiels with freq nodes, returns a dict of these files
+    """
+    Takes relation files with freq nodes, returns a dict of these files
+    """
     # freq_files = list(glob.glob(f"{context.graph}/*.idxarr/freq_edges/hid_*.chunk*"))
     files_freq_dict = defaultdict(list)
     for ffile in freq_files:
@@ -226,6 +257,9 @@ def edge_count_sum_freq(freq_files):
 
 
 def summing(files_hash_dict, files_freq_dict):
+    """
+    Take a dict to all nodes, return number of edges indexed by the mapping from node ids to edges.
+    """
     result = sum(
         [np.memmap(f, mode='r', dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)]).shape[0]
          for f in sum(list(files_hash_dict.values()), [])])
@@ -235,6 +269,9 @@ def summing(files_hash_dict, files_freq_dict):
 
 
 def MergeIndex_gen(context, edges_count_sum):
+    """
+    Generate the MergeIndex object (also a context) used in the next Task
+    """
     os.makedirs(f"{context.graph}/edges_sort", exist_ok=True)
     mergeindex = MergeIndex()
     mergeindex.edge_to_cursor = 0
@@ -248,6 +285,10 @@ def MergeIndex_gen(context, edges_count_sum):
 
 
 def merge_freq_and_other_idx_to(context, files_hash_dict, files_freq_dict, mergeindex):
+    """
+    Put all mapping from node hash to edge into mergeindex.toarrconcat, an numpy.memmap object.
+    Uses `pool.apply_async`, note that callback function is called here in the context of `merge_freq_and_other_idx_to` function, not in the context of function `mergeindex.merge_idx_to` or `mergeindex.merge_freq_idx_to` so that things similar to MergeIndex.freq_idx_pointer can be synced in each call and callback function.
+    """
     pool = Pool(processes=cpu_count())
     for items in list(files_hash_dict.items()):
         pool.apply_async(mergeindex.merge_idx_to, args=items, callback=mergeindex.merge_idx_to_callback)
@@ -272,6 +313,11 @@ def merge_freq_and_other_idx_to(context, files_hash_dict, files_freq_dict, merge
 # Files other than edges sort and edges mapper can be removed at this step, probably.
 
 def hid_idx_dict(graph, _id, edge_mapper_files, hid_freq_path):
+    """
+    Categorize nodes with short id value, put all those with short id being `_id` to an ArrayDict
+
+    :return: ArrayDict written to disk
+    """
     # 所有short hid为_id的节点(不区分节点类型)索引全部都放入同一个字典中
     # needs edges_sort/hid_*.idx.arr, edges_mapper/hid_*.dic.arr
     # edges_sort / hid_freq.idx.arr
@@ -311,6 +357,9 @@ def hid_idx_dict(graph, _id, edge_mapper_files, hid_freq_path):
 
 
 def hid_idx_merge(context, FILES_edge_mapper, hid_freq_path):
+    """
+    Put mapping from node hash to edge with the same node short hash to a single file, returning a list of files of different node short hash id.
+    """
     p = Pool(processes=cpu_count())
     graph = context.graph
     # print("FILES_edge_mapper:", FILES_edge_mapper)
@@ -323,6 +372,10 @@ def hid_idx_merge(context, FILES_edge_mapper, hid_freq_path):
 # node2indexarray
 
 def node2idxarr(output, splitfile_arguments, chunk_id, context):
+    """
+    Process each splitfile, categorizing nodes based on their hash id.
+    """
+
     def random_chunk_size():
         return random.randint(300000, 600000)
 
@@ -364,6 +417,9 @@ def node2idxarr(output, splitfile_arguments, chunk_id, context):
 
 
 def node2indexarray(context, node_files, CHUNK_COUNT=cpu_count()):
+    """
+    Split node files and pass seperated split files to :func:`numpygraph.load.node2inxarr`, eventually categroze nodes based on their hash id.
+    """
     pool = Pool(processes=CHUNK_COUNT)
     written_files = defaultdict(list)
     for nodefile in node_files:
@@ -395,6 +451,9 @@ def node2indexarray(context, node_files, CHUNK_COUNT=cpu_count()):
 # merge node index
 
 def merge_node_cursor_dict(context, node_type, node_files):
+    """
+    Convert each ArrayList of nodes of a specific node type information to ArrayDict.
+    """
     # 将每个含有节点信息的arraylist转为arraydict
     graph = context.graph
     data_type = [('nid', np.int64), ('cursor', np.int64), ('chunk_id', np.int64), ('local_cursor', np.int64)]
@@ -425,6 +484,9 @@ def merge_node_cursor_dict(context, node_type, node_files):
 
 
 def merge_node_index(context, node_curarr_files):
+    """
+    Convert all ArrayLists of node info to ArrayDict.
+    """
     p = Pool(processes=cpu_count())
     nodes_mapper_files = p.starmap(merge_node_cursor_dict,
                                    [(context, node_type, node_curarr_files[node_type]) for node_type in

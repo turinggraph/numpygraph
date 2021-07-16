@@ -5,8 +5,10 @@ import numpy as np
 
 
 def merge_mem_array(mems):
-    """ 合并 memmap
     """
+    Helper function that merges a list of np.array into one np.array. Used to merge memmaps in MergeIndex.
+    """
+    # 合并 memmap
     assert len(mems) > 0
     arr = np.zeros(shape=(sum([m.shape[0] for m in mems]),), dtype=mems[0].dtype)
     cur = 0
@@ -17,12 +19,19 @@ def merge_mem_array(mems):
 
 
 def unique_inplace(arr, unique=None, order=None, axis=0, kind='mergesort'):
+    """
+    Helper function that sorts and extracts unique items from a list.
+    """
     # memmap sort inplaced then unique index & counts return
     arr.sort(order=order, axis=axis, kind=kind)
     return np.unique(arr[unique], return_index=True, return_counts=True)
 
 
 class MergeIndex:
+    """
+    Context used to merge mapping from node hashes to edges. Can be changed to a class without member functions, or even be discarded in DAG Task.
+    """
+
     def __init__(self):
         self.edge_to_cursor = 0
         self.toarrconcat: np.memmap = None
@@ -30,6 +39,9 @@ class MergeIndex:
         self.filenames = defaultdict(list)
 
     def merge_idx_to(self, k, ipts):
+        """
+        Similar to :func:`numpygraph.mergeindex.MergeIndex.merge_freq_idx_to`, for normal nodes
+        """
         mems = [np.memmap(f, mode='r', dtype=[('from', np.int64), ('to', np.int64), ('ts', np.int32)])
                 for f in ipts]
         arr = merge_mem_array(mems)
@@ -37,6 +49,9 @@ class MergeIndex:
         return k, ipts, arr, _val, _idx, _len
 
     def merge_idx_to_callback(self, args):
+        """
+        Similar to :func:`numpygraph.mergeindex.MergeIndex.merge_freq_idx_to_callback`, for normal nodes
+        """
         k, ipts, arr, _val, _idx, _len = args
         # TODO: 语意不明确
         graph = "/".join(ipts[0].split("/")[:-2])
@@ -63,6 +78,9 @@ class MergeIndex:
         pass
 
     def merge_freq_idx_to(self, k, ipts):
+        """
+        Sorts out files that needs to be merged
+        """
         # 针对高频节点边表merge处理
         mems = [np.memmap(f, mode='r', dtype=[('to', np.int64), ('ts', np.int32)])
                 for f in ipts]
@@ -70,6 +88,9 @@ class MergeIndex:
         pass
 
     def merge_freq_idx_to_callback(self, args):
+        """
+        Call back function for merging mapping from freq nodes to edges, also syncs MergeIndex.freq_idx_pointer and similar objects since it's called in the context where apply_async is called.
+        """
         # 针对高频节点边表merge处理，回调
         k, mems = args
         value = k
@@ -84,10 +105,12 @@ class MergeIndex:
         pass
 
     def freq_idx_pointer_dump(self, context):
-        # unrevealled dependencies: mergeindex's freq_idx_pointer
-        # writes to edges_sort/hid_freq.idx.arr
+        """
+        Dump mapping from freq nodes to edges
+        :param context:
+        :return:
+        """
         # 针对高频节点->边索引表的处理
-        # TODO: 针对高频节点为空的异常处理
         stime = time.time()
         print(f"Executing freq_idx_pointer_dump, starting at {stime}")
         if len(self.freq_idx_pointer) != 0:

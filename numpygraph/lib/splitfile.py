@@ -1,16 +1,26 @@
 import os
 
 
-class SplitFile():
-    '''分片文件
-    '''
+class SplitFile:
+    """
+    Split (csv) files into multiple parts with file cursors (smallest unit of split is a line), so that we can split dumping tasks, utilizing multiprocessing.
+    """
 
     @staticmethod
     def split(path, num, jump=0, dist_random=False, single_threshold=int(1024 ** 2)):
-        """dist_random: 文件是否采用随机切割
-        True: 随机切割
-        False: 均匀切割
-        single_threshold: 文件小于该值不做切割
+        """
+        Split file into parts, returning a list of file pointers (that points into the file).
+
+        :type path: str
+        :param path: path to target file being split
+        :type num: int
+        :param num: number of slices to split into
+        :type jump: int
+        :param jump: number of lines to jump (maybe because they are headers)
+        :type dist_random: int
+        :param dist_random: whether split files with random lines in each slice
+        :type single_threshold: int
+        :param single_threshold: least file size so that we split it 文件小于该值不做切割
         """
         f = open(path)
         for _ in range(jump):
@@ -42,4 +52,7 @@ class SplitFile():
         return l
 
     def tell(self):
+        """
+        Return current location of cursor in file.
+        """
         return self.cursor
