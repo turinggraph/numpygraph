@@ -1,6 +1,6 @@
 Welcome to numpygraph's documentation!
 ======================================
-numpygraph is a read-only database that stores graphs.
+`numpygraph <https://github.com/turinggraph/numpygraph>`_ is a read-only database that stores graphs.
 
 .. toctree::
    :maxdepth: 6
