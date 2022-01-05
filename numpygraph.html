@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>numpygraph package &mdash; numpygraph  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="numpygraph.core package" href="numpygraph.core.html" />
+    <link rel="prev" title="numpygraph" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> numpygraph
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">numpygraph</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">numpygraph package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="numpygraph.core.html">numpygraph.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="numpygraph.datasets.html">numpygraph.datasets package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="numpygraph.lib.html">numpygraph.lib package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="numpygraph.test.html">numpygraph.test package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-numpygraph.context">numpygraph.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-numpygraph.dag_load">numpygraph.dag_load module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-numpygraph.load">numpygraph.load module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-numpygraph.mergeindex">numpygraph.mergeindex module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-numpygraph.read">numpygraph.read module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-numpygraph">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">numpygraph</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">numpygraph</a> &raquo;</li>
+      <li>numpygraph package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/numpygraph.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="numpygraph-package">
+<h1>numpygraph package<a class="headerlink" href="#numpygraph-package" title="Permalink to this headline"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="numpygraph.core.html">numpygraph.core package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.core.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.core.html#module-numpygraph.core.arraydict">numpygraph.core.arraydict module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.core.html#module-numpygraph.core.arraylist">numpygraph.core.arraylist module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.core.html#module-numpygraph.core.hash">numpygraph.core.hash module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.core.html#module-numpygraph.core.parse">numpygraph.core.parse module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.core.html#module-numpygraph.core">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="numpygraph.datasets.html">numpygraph.datasets package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.datasets.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.datasets.html#module-numpygraph.datasets.make_neo4j_csv">numpygraph.datasets.make_neo4j_csv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.datasets.html#module-numpygraph.datasets">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="numpygraph.lib.html">numpygraph.lib package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.lib.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="numpygraph.lib.npg.html">numpygraph.lib.npg package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="numpygraph.lib.npg.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="numpygraph.lib.npg.html#module-numpygraph.lib.npg.command">numpygraph.lib.npg.command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="numpygraph.lib.npg.html#module-numpygraph.lib.npg">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.lib.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.lib.html#module-numpygraph.lib.splitfile">numpygraph.lib.splitfile module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.lib.html#module-numpygraph.lib">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="numpygraph.test.html">numpygraph.test package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.test.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.test.html#module-numpygraph.test.dataset_load_test">numpygraph.test.dataset_load_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.test.html#module-numpygraph.test.dataset_make_test">numpygraph.test.dataset_make_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.test.html#module-numpygraph.test.graph_api_text">numpygraph.test.graph_api_text module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.test.html#module-numpygraph.test.hello_test">numpygraph.test.hello_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numpygraph.test.html#module-numpygraph.test">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-numpygraph.context">
+<span id="numpygraph-context-module"></span><h2>numpygraph.context module<a class="headerlink" href="#module-numpygraph.context" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="numpygraph.context.Context">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">numpygraph.context.</span></span><span class="sig-name descname"><span class="pre">Context</span></span><a class="headerlink" href="#numpygraph.context.Context" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="simple">
+<dt>Context class that stores information required through the loading process. Information stored inside includes:</dt><dd><ul class="simple">
+<li><p>dataset: path to the dataset folder where all node and relation files lies</p></li>
+<li><p>graph: path to the graph folder where all intermediate result rests</p></li>
+<li><p>relation_files: list of relation files in the dataset folder</p></li>
+<li><p>node_files: list of node files in the dataset folder (this and relation_files are for solving file dependencies)</p></li>
+<li><p>NODE_TYPE: dict of node types to their hash values</p></li>
+<li><p>NODE_FILE: dict of node files to hash values</p></li>
+<li><p>HASH_NODE_TYPE: dict of hash values of node types to node types</p></li>
+<li><p>HASH_SHORT_NODE_TYPE: dict of short hash values of node types to node typescript</p></li>
+<li><p>HASH_NODE_FILE: dict of hash values of node files to node files</p></li>
+<li><p>node_attr_type: dict of node type to their attributes’ types</p></li>
+<li><p>node_attr_type_without_str: dict of node type to their attributes’ type, without str type, which cannot be put into <a class="reference internal" href="numpygraph.core.html#module-numpygraph.core.arraylist" title="numpygraph.core.arraylist"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpygraph.core.arraylist</span></code></a> or <a class="reference internal" href="numpygraph.core.html#module-numpygraph.core.arraydict" title="numpygraph.core.arraydict"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpygraph.core.arraydict</span></code></a>. We would record file pointers to str type.</p></li>
+<li><p>node_attr_name and node_attr_name_without_str: dict of node type to their attributes’ names, str excluded in the latter for the same reason as above.</p></li>
+<li><p>valid_attrs: dict of node type to list of attributes’s types they own</p></li>
+<li><p>edge_attr_type, edge_attr_name: similar as those of nodes’</p></li>
+<li><p>node_type_path, node_file_path: file path to json file that stores NODE_TYPE and NODE_FILE for next time’s loading</p></li>
+<li><p>closed: mark the end of context loading process</p></li>
+<li><p>node_attr_chunk_num, node_csv_chunk_num: not used yet</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.load_loc">
+<span class="sig-name descname"><span class="pre">load_loc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.load_loc" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.load_context">
+<span class="sig-name descname"><span class="pre">load_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.load_context" title="Permalink to this definition"></a></dt>
+<dd><p>Function that loads context (and closes it after finished).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_path</strong> (<em>str</em>) – path to dataset of node csv files and relation csv files</p></li>
+<li><p><strong>graph_path</strong> (<em>str</em>) – path to intermediate result path</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.prepare_nodes">
+<span class="sig-name descname"><span class="pre">prepare_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.prepare_nodes" title="Permalink to this definition"></a></dt>
+<dd><p>Build index of all node files</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.prepare_relations">
+<span class="sig-name descname"><span class="pre">prepare_relations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.prepare_relations" title="Permalink to this definition"></a></dt>
+<dd><p>Build index of all relation files</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.node_type_hash">
+<span class="sig-name descname"><span class="pre">node_type_hash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.node_type_hash" title="Permalink to this definition"></a></dt>
+<dd><p>Return hash value of given node type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>col</strong> (<em>str</em>) – node type</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the corresponding hash value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.node_file_hash">
+<span class="sig-name descname"><span class="pre">node_file_hash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.node_file_hash" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.node_file">
+<span class="sig-name descname"><span class="pre">node_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.node_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.load_node_type_hash">
+<span class="sig-name descname"><span class="pre">load_node_type_hash</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.load_node_type_hash" title="Permalink to this definition"></a></dt>
+<dd><p>Load node type from previously stored json file (probably comming from a previous session).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.load_node_file_hash">
+<span class="sig-name descname"><span class="pre">load_node_file_hash</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.load_node_file_hash" title="Permalink to this definition"></a></dt>
+<dd><p>Load node files from previous json file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.close" title="Permalink to this definition"></a></dt>
+<dd><p>Denote that writing to Context is done, no more further changed to Context will be applied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.query_type">
+<span class="sig-name descname"><span class="pre">query_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hash_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.query_type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.query_type_hash">
+<span class="sig-name descname"><span class="pre">query_type_hash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.query_type_hash" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.query_file">
+<span class="sig-name descname"><span class="pre">query_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hash_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.query_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.query_file_hash">
+<span class="sig-name descname"><span class="pre">query_file_hash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.query_file_hash" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.query_edge_attr">
+<span class="sig-name descname"><span class="pre">query_edge_attr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.query_edge_attr" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.query_node_attr">
+<span class="sig-name descname"><span class="pre">query_node_attr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.query_node_attr" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.query_node_attr_type_without_str">
+<span class="sig-name descname"><span class="pre">query_node_attr_type_without_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.query_node_attr_type_without_str" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.query_node_attr_name">
+<span class="sig-name descname"><span class="pre">query_node_attr_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.query_node_attr_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.query_node_attr_name_without_str">
+<span class="sig-name descname"><span class="pre">query_node_attr_name_without_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.query_node_attr_name_without_str" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.query_valid_attrs">
+<span class="sig-name descname"><span class="pre">query_valid_attrs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.query_valid_attrs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.context.Context.parse_node_type">
+<span class="sig-name descname"><span class="pre">parse_node_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.context.Context.parse_node_type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-numpygraph.dag_load">
+<span id="numpygraph-dag-load-module"></span><h2>numpygraph.dag_load module<a class="headerlink" href="#module-numpygraph.dag_load" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.dag_load.end">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.dag_load.</span></span><span class="sig-name descname"><span class="pre">end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.dag_load.end" title="Permalink to this definition"></a></dt>
+<dd><p>Workaround function to put into EndTask.</p>
+<p>This function can be put into EndTask, taking several return values of previous Tasks so that the enclosing DAG
+would wait for all Tasks to end.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>any</em>) – any return value of previous Tasks</p></li>
+<li><p><strong>kwargs</strong> – any return value of previous Tasks</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>always 0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.dag_load.split_helper">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.dag_load.</span></span><span class="sig-name descname"><span class="pre">split_helper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">single_tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.dag_load.split_helper" title="Permalink to this definition"></a></dt>
+<dd><p>Workaround function to split return values of Task.</p>
+<p>This function can be put into Task, returning the “part“‘s element of the single_tuple that might be a mixed large tuple of several return values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>single_tuple</strong> (<em>any subscriptable object</em>) – the mixed tuple</p></li>
+<li><p><strong>part</strong> (<em>int</em>) – the index number</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the desired part of the tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.dag_load.dag_load">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.dag_load.</span></span><span class="sig-name descname"><span class="pre">dag_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.dag_load.dag_load" title="Permalink to this definition"></a></dt>
+<dd><p>Loads the whole graph.</p>
+<p>This function wraps all loading functions inside a DAG (please refer to tinydag) containing individual load functions as tasks. File dependency of the tasks are solved by passing file lists between tasks and each task only fetching files they intend to read from arguments passed in.</p>
+<p>Internal details:
+There are three DAGs for relation loading and one DAG for node loading:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Relation loading:</dt><dd><ul>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">relationship2indexarray</span></code>:</dt><dd><ul>
+<li><p><a class="reference internal" href="#numpygraph.load.lines_sampler" title="numpygraph.load.lines_sampler"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpygraph.load.lines_sampler()</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">merge_index_array_then_sort</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">relation_loading</span></code> that nests the previous two</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Node loading:</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">node_loading</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>With all dependencies expressed in arguments that each Task takes and return values of the Tasks, the DAGs can be safely put together into the last DAG <code class="docutils literal notranslate"><span class="pre">loading</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_path</strong> (<em>str</em>) – path to dataset of relations and nodes.</p></li>
+<li><p><strong>graph_path</strong> (<em>str</em>) – path to the target directory where all intermediate result and dump files to be stored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>object <a class="reference internal" href="#numpygraph.context.Context" title="numpygraph.context.Context"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpygraph.context.Context</span></code></a> after import, containing info about node type hash, dataset_path, graph_path, etc.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-numpygraph.load">
+<span id="numpygraph-load-module"></span><h2>numpygraph.load module<a class="headerlink" href="#module-numpygraph.load" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.lines_sampler">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">lines_sampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relationship_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.lines_sampler" title="Permalink to this definition"></a></dt>
+<dd><p>Sample relation files for the following split and dump steps.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.node_hash_space_stat">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">node_hash_space_stat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_sample_lines_AND_nodes_line_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">without_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">HID_BATCH_SIZE_AVERAGE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FREQ_WORDS_TOP_KEEP</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FREQ_WORDS_TOP_RATIO</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.node_hash_space_stat" title="Permalink to this definition"></a></dt>
+<dd><p>Find all freq nodes in the relation files and build an index</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.relationship2indexarray">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">relationship2indexarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_hash_space_stat_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relation_files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CHUNK_COUNT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.relationship2indexarray" title="Permalink to this definition"></a></dt>
+<dd><p>Split relation files, passing the split parts to <a class="reference internal" href="#numpygraph.load.lines2idxarr" title="numpygraph.load.lines2idxarr"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpygraph.load.lines2idxarr()</span></code></a> to utilize multiprocessing. This is a function distributing jobs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="#numpygraph.context.Context" title="numpygraph.context.Context"><em>Context</em></a>) – context object we always read from</p></li>
+<li><p><strong>node_hash_space_stat_result</strong> – result from <a class="reference internal" href="#numpygraph.load.node_hash_space_stat" title="numpygraph.load.node_hash_space_stat"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpygraph.load.node_hash_space_stat()</span></code></a></p></li>
+<li><p><strong>relation_files</strong> (<em>list of str</em>) – list of relation files in the dataset folder (also available in <cite>context</cite>, but we need to expose all file dependencies to avoid unwanted concurrent read/write.</p></li>
+<li><p><strong>CHUNK_COUNT</strong> (<em>int</em>) – desired number of chunk that relation files to split into</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a tuple of two lists: list of dump files for infrequent nodes and list of dump files for frequent nodes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.lines2idxarr">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">lines2idxarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">splitfile_arguments</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NODES_SHORT_HASH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.lines2idxarr" title="Permalink to this definition"></a></dt>
+<dd><p>Processes jobs given out by <a class="reference internal" href="#numpygraph.load.relationship2indexarray" title="numpygraph.load.relationship2indexarray"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpygraph.load.relationship2indexarray()</span></code></a>, reading slices of relationship files, classifying relations by node’s frequency and hash values of relationship ids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output</strong> – output location of arraylists of node mapping to edges</p></li>
+<li><p><strong>splitfile_arguments</strong> – file pointer to the splitfile</p></li>
+<li><p><strong>chunk_id</strong> – the numbering of the portion of splitile in the original file</p></li>
+<li><p><strong>freq_nodes</strong> – a list of freq nodes</p></li>
+<li><p><strong>NODES_SHORT_HASH</strong> – module applied to nodes that mapping nodes’ hash value to [0, NODES_SHORT_HASH)</p></li>
+<li><p><strong>context</strong> – context</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of file paths <cite>[normal_files, freq_files]</cite> of all files written to disk (still for solving file dependencies)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.edge_count_sum_chunk">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">edge_count_sum_chunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunk_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.edge_count_sum_chunk" title="Permalink to this definition"></a></dt>
+<dd><p>Take relation files with normal nodes, returns a dict of these files</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.edge_count_sum_freq">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">edge_count_sum_freq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.edge_count_sum_freq" title="Permalink to this definition"></a></dt>
+<dd><p>Takes relation files with freq nodes, returns a dict of these files</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.summing">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">summing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files_hash_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files_freq_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.summing" title="Permalink to this definition"></a></dt>
+<dd><p>Take a dict to all nodes, return number of edges indexed by the mapping from node ids to edges.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.MergeIndex_gen">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">MergeIndex_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges_count_sum</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.MergeIndex_gen" title="Permalink to this definition"></a></dt>
+<dd><p>Generate the MergeIndex object (also a context) used in the next Task</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.merge_freq_and_other_idx_to">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">merge_freq_and_other_idx_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files_hash_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files_freq_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mergeindex</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.merge_freq_and_other_idx_to" title="Permalink to this definition"></a></dt>
+<dd><p>Put all mapping from node hash to edge into mergeindex.toarrconcat, an numpy.memmap object.
+Uses <cite>pool.apply_async</cite>, note that callback function is called here in the context of <cite>merge_freq_and_other_idx_to</cite> function, not in the context of function <cite>mergeindex.merge_idx_to</cite> or <cite>mergeindex.merge_freq_idx_to</cite> so that things similar to MergeIndex.freq_idx_pointer can be synced in each call and callback function.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.hid_idx_dict">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">hid_idx_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_mapper_files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hid_freq_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.hid_idx_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Categorize nodes with short id value, put all those with short id being <cite>_id</cite> to an ArrayDict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>ArrayDict written to disk</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.hid_idx_merge">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">hid_idx_merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FILES_edge_mapper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hid_freq_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.hid_idx_merge" title="Permalink to this definition"></a></dt>
+<dd><p>Put mapping from node hash to edge with the same node short hash to a single file, returning a list of files of different node short hash id.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.node2idxarr">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">node2idxarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">splitfile_arguments</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.node2idxarr" title="Permalink to this definition"></a></dt>
+<dd><p>Process each splitfile, categorizing nodes based on their hash id.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.node2indexarray">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">node2indexarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CHUNK_COUNT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.node2indexarray" title="Permalink to this definition"></a></dt>
+<dd><p>Split node files and pass seperated split files to <code class="xref py py-func docutils literal notranslate"><span class="pre">numpygraph.load.node2inxarr()</span></code>, eventually categroze nodes based on their hash id.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.merge_node_cursor_dict">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">merge_node_cursor_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.merge_node_cursor_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Convert each ArrayList of nodes of a specific node type information to ArrayDict.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.load.merge_node_index">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.load.</span></span><span class="sig-name descname"><span class="pre">merge_node_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_curarr_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.load.merge_node_index" title="Permalink to this definition"></a></dt>
+<dd><p>Convert all ArrayLists of node info to ArrayDict.</p>
+</dd></dl>
+
+</section>
+<section id="module-numpygraph.mergeindex">
+<span id="numpygraph-mergeindex-module"></span><h2>numpygraph.mergeindex module<a class="headerlink" href="#module-numpygraph.mergeindex" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.mergeindex.merge_mem_array">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.mergeindex.</span></span><span class="sig-name descname"><span class="pre">merge_mem_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mems</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.mergeindex.merge_mem_array" title="Permalink to this definition"></a></dt>
+<dd><p>Helper function that merges a list of np.array into one np.array. Used to merge memmaps in MergeIndex.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="numpygraph.mergeindex.unique_inplace">
+<span class="sig-prename descclassname"><span class="pre">numpygraph.mergeindex.</span></span><span class="sig-name descname"><span class="pre">unique_inplace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mergesort'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.mergeindex.unique_inplace" title="Permalink to this definition"></a></dt>
+<dd><p>Helper function that sorts and extracts unique items from a list.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="numpygraph.mergeindex.MergeIndex">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">numpygraph.mergeindex.</span></span><span class="sig-name descname"><span class="pre">MergeIndex</span></span><a class="headerlink" href="#numpygraph.mergeindex.MergeIndex" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Context used to merge mapping from node hashes to edges. Can be changed to a class without member functions, or even be discarded in DAG Task.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.mergeindex.MergeIndex.merge_idx_to">
+<span class="sig-name descname"><span class="pre">merge_idx_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ipts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.mergeindex.MergeIndex.merge_idx_to" title="Permalink to this definition"></a></dt>
+<dd><p>Similar to <a class="reference internal" href="#numpygraph.mergeindex.MergeIndex.merge_freq_idx_to" title="numpygraph.mergeindex.MergeIndex.merge_freq_idx_to"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpygraph.mergeindex.MergeIndex.merge_freq_idx_to()</span></code></a>, for normal nodes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.mergeindex.MergeIndex.merge_idx_to_callback">
+<span class="sig-name descname"><span class="pre">merge_idx_to_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.mergeindex.MergeIndex.merge_idx_to_callback" title="Permalink to this definition"></a></dt>
+<dd><p>Similar to <a class="reference internal" href="#numpygraph.mergeindex.MergeIndex.merge_freq_idx_to_callback" title="numpygraph.mergeindex.MergeIndex.merge_freq_idx_to_callback"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpygraph.mergeindex.MergeIndex.merge_freq_idx_to_callback()</span></code></a>, for normal nodes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.mergeindex.MergeIndex.merge_freq_idx_to">
+<span class="sig-name descname"><span class="pre">merge_freq_idx_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ipts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.mergeindex.MergeIndex.merge_freq_idx_to" title="Permalink to this definition"></a></dt>
+<dd><p>Sorts out files that needs to be merged</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.mergeindex.MergeIndex.merge_freq_idx_to_callback">
+<span class="sig-name descname"><span class="pre">merge_freq_idx_to_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.mergeindex.MergeIndex.merge_freq_idx_to_callback" title="Permalink to this definition"></a></dt>
+<dd><p>Call back function for merging mapping from freq nodes to edges, also syncs MergeIndex.freq_idx_pointer and similar objects since it’s called in the context where apply_async is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.mergeindex.MergeIndex.freq_idx_pointer_dump">
+<span class="sig-name descname"><span class="pre">freq_idx_pointer_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.mergeindex.MergeIndex.freq_idx_pointer_dump" title="Permalink to this definition"></a></dt>
+<dd><p>Dump mapping from freq nodes to edges
+:param context:
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-numpygraph.read">
+<span id="numpygraph-read-module"></span><h2>numpygraph.read module<a class="headerlink" href="#module-numpygraph.read" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="numpygraph.read.Read">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">numpygraph.read.</span></span><span class="sig-name descname"><span class="pre">Read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.read.Read" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.read.Read.fetch_node_id">
+<span class="sig-name descname"><span class="pre">fetch_node_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.read.Read.fetch_node_id" title="Permalink to this definition"></a></dt>
+<dd><p>Return node_id (hash of node value) based on node value</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.read.Read.fetch_node_attr">
+<span class="sig-name descname"><span class="pre">fetch_node_attr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.read.Read.fetch_node_attr" title="Permalink to this definition"></a></dt>
+<dd><p>Return node attribute given node_id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.read.Read.fetch_edge_attr">
+<span class="sig-name descname"><span class="pre">fetch_edge_attr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.read.Read.fetch_edge_attr" title="Permalink to this definition"></a></dt>
+<dd><p>Given from node id, to node id, return all edges attribute connecting the two nodes.</p>
+<p>Treat all edges as two-way edges.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.read.Read.fetch_node_neibor_nodes">
+<span class="sig-name descname"><span class="pre">fetch_node_neibor_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.read.Read.fetch_node_neibor_nodes" title="Permalink to this definition"></a></dt>
+<dd><p>Return all neighbor nodes given a node’s id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.read.Read.fetch_node_neibor_edges">
+<span class="sig-name descname"><span class="pre">fetch_node_neibor_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.read.Read.fetch_node_neibor_edges" title="Permalink to this definition"></a></dt>
+<dd><p>Return all edges incident to the given node</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.read.Read.sample_node_with_degree">
+<span class="sig-name descname"><span class="pre">sample_node_with_degree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.read.Read.sample_node_with_degree" title="Permalink to this definition"></a></dt>
+<dd><p>Given a node and degree to take in each step, do a three-level depth search that includes at most <cite>degrees</cite> number of nodes in each level then return all nodes traversed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="numpygraph.read.Read.random_sample_nodes">
+<span class="sig-name descname"><span class="pre">random_sample_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#numpygraph.read.Read.random_sample_nodes" title="Permalink to this definition"></a></dt>
+<dd><p>Given a node id, return <cite>size</cite> random edges incident to the node as well as the nodes at the other side of the edges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>size</strong> (<em>int</em>) – number of nodes (and corresponding edges) to return</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-numpygraph">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-numpygraph" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="numpygraph" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="numpygraph.core.html" class="btn btn-neutral float-right" title="numpygraph.core package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, hp027, hanryxu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
